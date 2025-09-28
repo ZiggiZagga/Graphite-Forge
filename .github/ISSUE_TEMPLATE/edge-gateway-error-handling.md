@@ -1,4 +1,5 @@
----
+name: "Edge Gateway: Error Handling"
+about: "Implement global error handling and fallback routes for the Edge Gateway."
 title: "Add Global Error Handling to Edge Gateway"
 labels: [bug, enhancement, gateway]
 ---

@@ -1,4 +1,5 @@
----
+name: "Edge Gateway: Authentication & Authorization"
+about: "Require authentication and authorization for all routes in the Edge Gateway."
 title: "Add Authentication and Authorization to Edge Gateway"
 labels: [security, enhancement, gateway]
 ---

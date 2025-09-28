@@ -1,4 +1,5 @@
----
+name: "Edge Gateway: Externalized Config"
+about: "Integrate Spring Cloud Config for dynamic and secure configuration management."
 title: "Integrate Externalized Configuration for Edge Gateway"
 labels: [enhancement, config, gateway]
 ---

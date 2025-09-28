@@ -1,4 +1,5 @@
----
+name: "Edge Gateway: Route Refinement"
+about: "Refine route predicates and filters to avoid accidental exposure and improve routing."
 title: "Refine Route Predicates and Filters in Edge Gateway"
 labels: [enhancement, gateway]
 ---

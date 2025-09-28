@@ -1,4 +1,5 @@
----
+name: "Edge Gateway: CORS Policy"
+about: "Define and enforce a CORS policy for the Edge Gateway."
 title: "Add CORS Policy to Edge Gateway"
 labels: [security, enhancement, gateway]
 ---

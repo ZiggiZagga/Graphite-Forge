@@ -1,4 +1,5 @@
----
+name: "Edge Gateway: Observability"
+about: "Add distributed tracing and structured logging to the Edge Gateway."
 title: "Add Observability to Edge Gateway (Tracing & Logging)"
 labels: [enhancement, observability, gateway]
 ---
