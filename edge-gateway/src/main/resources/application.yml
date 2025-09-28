@@ -1,0 +1,38 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: edge-gateway
+  cloud:
+    gateway:
+      discovery:
+        locator:
+          enabled: true
+      routes:
+        - id: world-route
+          uri: lb://world-service
+          predicates:
+            - Path=/world/
+        - id: greeting-route
+          uri: lb://greeting-service
+          predicates:
+            - Path=/greet/
+        - id: graphql-route
+          uri: lb://graphql-service
+          predicates:
+            - Path=/graphql/
+            - Method=POST
+          filters:
+            - RewritePath=/graphql/(?<remaining>.*), /${remaining}
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://eureka-server:8761/eureka
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,env,refresh,bus-refresh

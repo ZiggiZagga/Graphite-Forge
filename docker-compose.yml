@@ -1,0 +1,27 @@
+version: "3.8"
+
+services:
+
+  # ... bestehende Services: rabbitmq, eureka-server, config-server, world-service, greeting-service
+
+  edge-gateway:
+    image: edge-gateway:native
+    depends_on:
+      - eureka-server
+    environment:
+      - EUREKACLIENTSERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka
+    ports:
+      - "8080:8080"
+
+  graphql-service:
+    image: graphql-service:native
+    depends_on:
+      - rabbitmq
+      - eureka-server
+      - config-server
+    environment:
+      - SPRINGCLOUDCONFIG_URI=http://config-server:8888
+      - EUREKACLIENTSERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka
+      - SPRINGCLOUDBUS_ENABLED=true
+    ports:
+      - "8083:8083"

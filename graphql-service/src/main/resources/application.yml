@@ -1,0 +1,29 @@
+server:
+  port: 8083
+
+spring:
+  application:
+    name: graphql-service
+  r2dbc:
+    url: r2dbc:h2:mem:///testdb;DBCLOSEDELAY=-1
+  rabbitmq:
+    host: rabbitmq
+    port: 5672
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://eureka-server:8761/eureka
+
+features:
+  crud:
+    create-enabled: true
+    read-enabled: true
+    update-enabled: true
+    delete-enabled: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,env,refresh,bus-refresh,bus-trace

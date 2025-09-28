@@ -1,0 +1,5 @@
+com/example/graphql/ItemRepository.class
+com/example/graphql/CrudFeatures.class
+com/example/graphql/Item.class
+com/example/graphql/ItemGraphqlController.class
+com/example/graphql/GraphqlServiceApplication.class

@@ -1,0 +1,5 @@
+/workspaces/Graphite-Forge/graphql-service/src/main/java/com/example/graphql/GraphqlServiceApplication.java
+/workspaces/Graphite-Forge/graphql-service/src/main/java/com/example/graphql/ItemGraphqlController.java
+/workspaces/Graphite-Forge/graphql-service/src/main/java/com/example/graphql/Item.java
+/workspaces/Graphite-Forge/graphql-service/src/main/java/com/example/graphql/CrudFeatures.java
+/workspaces/Graphite-Forge/graphql-service/src/main/java/com/example/graphql/ItemRepository.java
