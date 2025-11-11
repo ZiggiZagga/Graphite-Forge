@@ -1,5 +1,12 @@
+com/example/graphql/ItemNotFoundException.class
 com/example/graphql/ItemRepository.class
-com/example/graphql/CrudFeatures.class
 com/example/graphql/Item.class
 com/example/graphql/ItemGraphqlController.class
+com/example/graphql/ItemService.class
 com/example/graphql/GraphqlServiceApplication.class
+com/example/graphql/ItemOperationDisabledException.class
+com/example/graphql/SecurityConfig.class
+com/example/graphql/GlobalGraphQLExceptionResolver.class
+com/example/graphql/ItemException.class
+com/example/graphql/ItemDatabaseException.class
+com/example/graphql/CrudFeatures.class

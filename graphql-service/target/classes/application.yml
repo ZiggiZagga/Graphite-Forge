@@ -1,19 +1,41 @@
 server:
   port: 8083
+  servlet:
+    context-path: /
 
 spring:
   application:
     name: graphql-service
   r2dbc:
-    url: r2dbc:h2:mem:///testdb;DBCLOSEDELAY=-1
+    url: r2dbc:h2:mem:///testdb;MODE=PostgreSQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+    schemas: PUBLIC
   rabbitmq:
     host: rabbitmq
     port: 5672
+  graphql:
+    graphiql:
+      enabled: true
+      path: /graphiql
 
 eureka:
   client:
     service-url:
       defaultZone: http://eureka-server:8761/eureka
+    register-with-eureka: true
+    fetch-registry: true
+  instance:
+    prefer-ip-address: true
 
 features:
   crud:
@@ -26,4 +48,27 @@ management:
   endpoints:
     web:
       exposure:
-        include: health,info,env,refresh,bus-refresh,bus-trace
+        include: health,info,env,refresh,bus-refresh,metrics,prometheus
+  endpoint:
+    health:
+      show-details: always
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+
+logging:
+  level:
+    root: INFO
+    com.example.graphql: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+
+# Security (Keycloak resource server)
+spring:
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          # Use KEYCLOAK_ISSUER_URI env var or default local realm
+          issuer-uri: ${KEYCLOAK_ISSUER_URI:http://localhost:8081/realms/myrealm}

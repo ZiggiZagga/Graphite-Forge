@@ -1,0 +1,4 @@
+com.example:graphql-service:jar:0.0.1-SNAPSHOT
++- org.springframework.boot:spring-boot-starter-test:jar:4.0.0-RC2:test
+|  \- (org.springframework.boot:spring-boot-test-autoconfigure:jar:4.0.0-RC2:test - version managed from 4.0.0-RC2; omitted for duplicate)
+\- org.springframework.boot:spring-boot-test-autoconfigure:jar:4.0.0-RC2:test (scope not updated to test)

@@ -1,1 +1,12 @@
+com/example/graphql/ItemGraphqlControllerTest$ItemByIdQueryTests.class
+com/example/graphql/ItemGraphqlControllerTest$UpdateItemMutationTests.class
 com/example/graphql/ItemGraphqlControllerTest.class
+com/example/graphql/ItemServiceTest$UpdateItemTests.class
+com/example/graphql/ItemGraphqlControllerTest$ItemsQueryTests.class
+com/example/graphql/ItemServiceTest$DeleteItemTests.class
+com/example/graphql/ItemServiceTest.class
+com/example/graphql/ItemGraphqlControllerTest$DeleteItemMutationTests.class
+com/example/graphql/ItemServiceTest$GetAllItemsTests.class
+com/example/graphql/ItemServiceTest$CreateItemTests.class
+com/example/graphql/ItemServiceTest$GetItemByIdTests.class
+com/example/graphql/ItemGraphqlControllerTest$CreateItemMutationTests.class

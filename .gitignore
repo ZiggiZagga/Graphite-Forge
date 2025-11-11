@@ -1,0 +1,79 @@
+# Maven / Java
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber
+.mvn/timing.properties
+
+# IntelliJ
+.idea/
+*.iml
+*.iws
+out/
+
+# VS Code
+.vscode/
+
+# Eclipse
+*.classpath
+*.project
+*.settings/
+.apt_generated
+.eclipse/
+.metadata/
+bin/
+tmp/
+
+# Mac
+.DS_Store
+
+# Logs
+*.log
+
+# Temporary files
+*.tmp
+*.temp
+*~
+
+# Environment files
+.env
+.env.*
+
+# OS generated
+Thumbs.db
+
+# Gradle (if present)
+.gradle/
+
+# Docker
+docker-compose.override.yml
+
+# IntelliJ idea misc
+.idea/*
+!/.idea/runConfigurations
+
+# Maven wrapper
+.mvn/wrapper/maven-wrapper.jar
+
+# Build results
+build/
+
+# Test output
+surefire-reports/
+failsafe-reports/
+
+# Local m2 repository cache (if used accidentally)
+.local-m2/
+
+# Node (if any frontend present)
+node_modules/
+
+# Coverage
+coverage/
+
+# Generated sources
+**/generated-sources/

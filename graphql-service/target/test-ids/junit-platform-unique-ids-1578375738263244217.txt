@@ -1,6 +1,0 @@
-[engine:junit-jupiter]/[class:com.example.graphql.ItemGraphqlControllerTest]/[method:testUpdateItemMutation_updatesItem()]
-[engine:junit-jupiter]/[class:com.example.graphql.ItemGraphqlControllerTest]/[method:testReadDisabled_returnsError()]
-[engine:junit-jupiter]/[class:com.example.graphql.ItemGraphqlControllerTest]/[method:testCreateItemMutation_createsItem()]
-[engine:junit-jupiter]/[class:com.example.graphql.ItemGraphqlControllerTest]/[method:testItemByIdQuery_returnsItem()]
-[engine:junit-jupiter]/[class:com.example.graphql.ItemGraphqlControllerTest]/[method:testDeleteItemMutation_deletesItem()]
-[engine:junit-jupiter]/[class:com.example.graphql.ItemGraphqlControllerTest]/[method:testItemsQuery_returnsItems()]
