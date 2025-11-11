@@ -33,11 +33,11 @@ Graphite-Forge is your launchpad for modern, cloud-native microservices. It elim
 ### 🎯 Major Upgrades
 
 - **Java 11 → Java 25**: Pattern matching, records, virtual threads
-- **Spring Boot 3.1 → 4.0**: Enhanced reactive support, improved security
+- **Spring Boot 3.1 → 4.0 (4.0.0-RC2 in this branch)**: Enhanced reactive support, improved security
 - **Records for Domain Entities**: 65% less boilerplate code
 - **Flyway Migrations**: Version-controlled database schema
 - **Global Exception Handling**: Pattern-matched error responses
-- **95+ Tests**: Comprehensive coverage with edge cases
+- **≈50 Tests (graphql-service unit tests)**: Unit coverage for controller and service behavior; consider adding integration tests for end-to-end validation
 - **Production-Ready**: Security, monitoring, and observability
 
 ### ✨ New Features
@@ -85,7 +85,7 @@ Graphite-Forge is your launchpad for modern, cloud-native microservices. It elim
 - ✅ WebFlux + R2DBC for reactive database access
 - ✅ Flyway database migrations
 - ✅ Comprehensive error handling
-- ✅ 95+ unit and integration tests
+- ✅ ≈50 unit tests (graphql-service: controller + service)
 - ✅ Test-first (TDD) approach with JUnit 5, Mockito, Spring Boot Test
 - ✅ Extensible and production-ready configuration
 
@@ -124,7 +124,8 @@ mvn test
 ## Project Structure
 ```
 edge-gateway/           # API Gateway (Spring Cloud Gateway)
-graphql-service/        # GraphQL CRUD microservice (Java 25, Spring Boot 4)
+graphql-service/        # GraphQL CRUD microservice (Java 25, Spring Boot 4 - 4.0.0-RC2 in this branch)
+ui/                     # Next.js + Tailwind + Apollo UI scaffold (see /ui/README.md)
 docker-compose.yml      # Local orchestration
 db/migrations/          # Flyway schema migrations
 ```
@@ -188,7 +189,7 @@ query {
 
 ## Testing Strategy
 
-Graphite-Forge includes 95+ comprehensive tests covering:
+Graphite-Forge includes ≈50 unit tests covering:
 
 ### Controller Tests (45+ scenarios)
 - Happy path operations
@@ -253,7 +254,7 @@ GET  /actuator/prometheus    # Prometheus metrics
 - **Error Handling**: Global exception resolver with pattern matching
 - **Reactive**: Non-blocking I/O throughout
 - **Immutability**: Java records for domain entities
-- **Testing**: TDD with 95+ comprehensive tests
+- **Testing**: TDD with ≈50 unit tests (controller + service); consider adding integration tests
 - **Documentation**: JavaDoc and inline comments
 
 ---
@@ -261,7 +262,7 @@ GET  /actuator/prometheus    # Prometheus metrics
 ## Production Deployment
 
 ### Before Going Live
-1. ✅ Add Spring Security (JWT/OAuth2)
+1. ✅ Spring Security (JWT/OAuth2) integrated — Keycloak is supported as an IDP. Configure the Keycloak issuer using the environment variable `KEYCLOAK_ISSUER_URI` (example: `http://localhost:8081/realms/myrealm`). See `graphql-service/src/main/resources/application.yml` and `edge-gateway/src/main/resources/application.yml` for defaults.
 2. ✅ Configure HTTPS/TLS
 3. ✅ Set up distributed tracing (Sleuth + Zipkin)
 4. ✅ Configure rate limiting (Resilience4j)

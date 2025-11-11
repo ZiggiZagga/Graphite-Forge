@@ -111,7 +111,7 @@ spring:
 
 ### 5. ✅ Comprehensive Testing
 
-#### Test Count: 95+ scenarios
+#### Test Count: ≈50 scenarios
 
 **ItemGraphqlControllerTest (45+ tests)**
 Organized in nested classes:
@@ -224,7 +224,7 @@ logging:
 |--------|-------|-----------|
 | Java Version | 25 | ✅ Latest |
 | Spring Boot | 4.0.0 | ✅ Latest |
-| Test Coverage | 95+ tests | ✅ Comprehensive |
+| Test Coverage | ≈50 tests | ✅ Comprehensive |
 | Code Duplication | <5% | ✅ Excellent |
 | Cyclomatic Complexity | <15 | ✅ Good |
 | Documentation | 100% | ✅ Complete |
@@ -244,7 +244,7 @@ logging:
 | No exception handling | 🔴 Critical | ✅ Fixed | GlobalGraphQLExceptionResolver |
 | Missing error responses | 🔴 Critical | ✅ Fixed | Pattern-matched error handling |
 | No database migrations | 🟠 High | ✅ Fixed | Flyway migrations |
-| Incomplete test coverage | 🟠 High | ✅ Fixed | 95+ comprehensive tests |
+| Incomplete test coverage | 🟠 High | ✅ Fixed | ≈50 comprehensive tests |
 | No security | 🟠 High | ⏳ Recommended | Spring Security template ready |
 | No observability | 🟠 High | ✅ Implemented | Prometheus, metrics, health checks |
 | Old Java version | 🟡 Medium | ✅ Fixed | Upgraded to Java 25 |
@@ -314,7 +314,7 @@ logging:
 **After:**
 - 45 controller tests (nested classes)
 - 50 service tests (nested classes)
-- 95+ total scenarios
+- ≈50 total scenarios
 - Full happy path coverage
 - Comprehensive edge case coverage
 - Feature toggle verification
@@ -388,7 +388,7 @@ docker-compose up --build
 - [x] Reactive database access
 - [x] Service layer abstraction
 - [x] Database migrations
-- [x] Extensive test coverage (95+ tests)
+- [x] Extensive test coverage (≈50 unit tests)
 - [x] Configuration management
 - [x] Health checks
 - [x] Metrics and monitoring
@@ -468,7 +468,7 @@ Graphite-Forge v2.0 is now **production-ready** with:
 - ✅ Comprehensive error handling
 - ✅ Reactive throughout
 - ✅ Database migrations
-- ✅ 95+ tests with excellent coverage
+- ✅ ≈50 tests with excellent coverage
 - ✅ Production-grade configuration
 - ✅ Full observability
 - ✅ Complete documentation

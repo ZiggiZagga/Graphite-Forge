@@ -9,3 +9,4 @@
 /workspaces/Graphite-Forge/graphql-service/src/main/java/com/example/graphql/ItemOperationDisabledException.java
 /workspaces/Graphite-Forge/graphql-service/src/main/java/com/example/graphql/ItemRepository.java
 /workspaces/Graphite-Forge/graphql-service/src/main/java/com/example/graphql/ItemService.java
+/workspaces/Graphite-Forge/graphql-service/src/main/java/com/example/graphql/SecurityConfig.java

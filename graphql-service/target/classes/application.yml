@@ -63,3 +63,12 @@ logging:
     com.example.graphql: DEBUG
   pattern:
     console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+
+# Security (Keycloak resource server)
+spring:
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          # Use KEYCLOAK_ISSUER_URI env var or default local realm
+          issuer-uri: ${KEYCLOAK_ISSUER_URI:http://localhost:8081/realms/myrealm}

@@ -133,7 +133,7 @@
 | Total Lines (Production) | ~450 | ~650 | +44% |
 | Total Lines (Tests) | ~80 | ~700 | +775% |
 | Test Files | 2 | 2 | Same (much improved) |
-| Test Methods | 6 | 95+ | +1483% |
+| Test Methods | 6 | ≈50 | +733% |
 | Exception Classes | 0 | 3 | +3 new |
 | Service Classes | 0 | 1 | +1 new |
 | Record Types | 0 | 1 | Item upgrade |
@@ -146,7 +146,7 @@
 | Error Case Tests | 1 | 30 | +2900% |
 | Edge Case Tests | 0 | 40 | +∞ |
 | Feature Toggle Tests | 1 | 15 | +1400% |
-| **Total** | 6 | 95+ | +1483% |
+| **Total** | 6 | ≈50 | +733% |
 
 ### Configuration Improvements
 
@@ -224,7 +224,7 @@ Features:
 
 ### Testing Strategy
 - **Before:** Happy path only, basic mocking
-- **After:** TDD with 95+ scenarios, comprehensive mocking
+- **After:** TDD with ≈50 scenarios, comprehensive mocking
 - **Result:** High confidence in code quality
 
 ### Documentation
@@ -241,7 +241,7 @@ Features:
 | Aspect | Rating | Notes |
 |--------|--------|-------|
 | Code Quality | ⭐⭐⭐⭐⭐ | Modern patterns, no duplication |
-| Test Coverage | ⭐⭐⭐⭐⭐ | 95+ tests, all scenarios |
+| Test Coverage | ⭐⭐⭐⭐⭐ | ≈50 tests, primary scenarios |
 | Error Handling | ⭐⭐⭐⭐⭐ | Global resolver, pattern matching |
 | Documentation | ⭐⭐⭐⭐⭐ | JavaDoc + comprehensive guides |
 | Security | ⭐⭐⭐⭐☆ | Ready for OAuth2/JWT |
@@ -332,7 +332,7 @@ docker-compose up --build
 
 After upgrade, verify:
 
-- [ ] All 95+ tests pass: `mvn test`
+- [ ] All ≈50 tests pass: `mvn test`
 - [ ] Application starts: `mvn spring-boot:run`
 - [ ] GraphiQL accessible: http://localhost:8083/graphiql
 - [ ] Sample query works: `{ items { id name } }`
@@ -394,7 +394,7 @@ Initial State (Nov 11, 2025 - Morning):
 
 Final State (Nov 11, 2025 - Complete):
 ├─ Java 25, Spring Boot 4.0
-├─ 14 classes, 95+ tests
+├─ 14 classes, ≈50 tests
 ├─ Production-ready config
 ├─ Comprehensive error handling
 └─ Full documentation
@@ -407,7 +407,7 @@ Final State (Nov 11, 2025 - Complete):
 - **Total: 380 → 1850 (+386%)**
 
 ### Quality Improvements
-- Tests: 6 → 95+ scenarios (+1483%)
+- Tests: 6 → ≈50 scenarios (+733%)
 - Error types: 0 → 4 specific exceptions
 - Documentation: 30% → 100% coverage
 - Code patterns: Old → Modern Java 25
@@ -420,7 +420,7 @@ Final State (Nov 11, 2025 - Complete):
 
 ✅ **Production-Ready**
 - Comprehensive error handling
-- Extensive testing (95+ tests)
+- Extensive testing (≈50 unit tests)
 - Database migrations
 - Health checks & metrics
 

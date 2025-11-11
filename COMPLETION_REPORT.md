@@ -24,7 +24,7 @@ Graphite-Forge has been successfully upgraded from Java 11 + Spring Boot 3.1 to 
 - Global error resolver: Pattern-matched exception handling
 
 ✅ **Testing**
-- 6 tests → **95+ comprehensive tests**
+- 6 tests → **≈50 comprehensive tests**
 - Happy path, error cases, edge cases, feature toggles
 - Organized in nested test classes
 - Using StepVerifier for reactive testing
@@ -53,7 +53,7 @@ Graphite-Forge has been successfully upgraded from Java 11 + Spring Boot 3.1 to 
 |--------|--------|-------|--------|
 | Java Version | 11 LTS | 25 Latest | ✅ +14 versions |
 | Spring Boot | 3.1.5 | 4.0.0 | ✅ Major version |
-| Test Count | 6 | 95+ | ✅ +1483% |
+| Test Count | 6 | ≈50 | ✅ +733% |
 | Test Lines | 80 | 700 | ✅ +775% |
 | Exception Classes | 0 | 4 | ✅ Structured |
 | Service Classes | 0 | 1 | ✅ Added |
@@ -67,7 +67,7 @@ Graphite-Forge has been successfully upgraded from Java 11 + Spring Boot 3.1 to 
 | ItemException Hierarchy | ✅ New | 4 specific exception types |
 | GlobalExceptionResolver | ✅ New | Pattern-matched error handling |
 | Flyway Migrations | ✅ New | Version-controlled schema |
-| Test Suite | ✅ Enhanced | 95+ scenarios covered |
+| Test Suite | ✅ Enhanced | ≈50 scenarios covered |
 
 ---
 
@@ -133,7 +133,7 @@ Graphite-Forge has been successfully upgraded from Java 11 + Spring Boot 3.1 to 
 ✅ Full input validation (Jakarta Bean Validation)
 ✅ Proper service layer separation
 ✅ 4 specific exception types
-✅ Comprehensive tests (95+ scenarios)
+✅ Comprehensive tests (≈50 scenarios)
 ✅ Flyway database migrations
 ✅ Pattern-matched error handling
 ✅ Java 25 with modern patterns
@@ -153,8 +153,8 @@ Graphite-Forge has been successfully upgraded from Java 11 + Spring Boot 3.1 to 
 
 ### Test Coverage
 
-- **Total Tests:** 6 → 95+ (+1483%)
-- **Test Methods:** 6 → 95+ 
+- **Total Tests:** 6 → ≈50 (+733%)
+- **Test Methods:** 6 → ≈50 
 - **Test Scenarios:** 30% → 100%
 - **Edge Cases:** 0 → 40+
 
@@ -179,7 +179,7 @@ mvn clean install
 ### 2. Run All Tests
 ```bash
 mvn test
-# Should see: 95+ tests passing
+# Should see: ≈50 tests passing
 ```
 
 ### 3. Start the Application

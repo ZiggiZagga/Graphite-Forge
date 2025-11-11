@@ -3,6 +3,8 @@
 **Last Updated:** November 11, 2025  
 **Project Status:** ✅ COMPLETE
 
+Note: This branch uses Spring Boot 4.0.0‑RC2. Spring Security with OAuth2 resource‑server (Keycloak) is integrated; set `KEYCLOAK_ISSUER_URI` to point at your Keycloak realm. The repository contains approximately ≈50 unit tests focused on the `graphql-service` (controller + service); consider adding integration tests for end‑to‑end validation.
+
 ---
 
 ## 🎯 Start Here
@@ -232,7 +234,7 @@ Graphite-Forge/
     │   ├── ItemRepository.java             Data access
     │   ├── CrudFeatures.java               Feature toggles
     │   └── [Exception classes]             Error hierarchy
-    ├── src/test/java/.../...               95+ tests
+  ├── src/test/java/.../...               ≈50 tests
     ├── src/main/resources/
     │   ├── application.yml                 Rich configuration
     │   ├── graphql/schema.graphqls         GraphQL schema

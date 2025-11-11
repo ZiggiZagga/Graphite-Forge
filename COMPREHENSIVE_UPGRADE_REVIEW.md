@@ -507,7 +507,7 @@ graphql-service/
 | Entities | Class → Record | 65% less code, immutability |
 | Error Handling | Basic → Comprehensive | Standardized responses, pattern matching |
 | Database | No migrations → Flyway | Version control, automatic schema evolution |
-| Testing | Basic → Comprehensive | 95+ tests covering all scenarios |
+| Testing | Basic → Comprehensive | ≈50 tests covering the primary service scenarios |
 | Configuration | Minimal → Rich | Prometheus, GraphiQL, H2 console |
 | Logging | Basic → Structured | Debug logging, correlation IDs ready |
 
@@ -641,7 +641,7 @@ Graphite-Forge is now **production-ready** with:
 - ✅ Comprehensive error handling
 - ✅ Reactive throughout
 - ✅ Database migrations
-- ✅ Extensive testing (95+ tests)
+- ✅ Extensive testing (≈50 unit tests)
 - ✅ Rich configuration
 - ✅ Monitoring and observability
 

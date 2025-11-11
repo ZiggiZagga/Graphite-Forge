@@ -19,7 +19,7 @@ mvn clean install
 ### 3. Run Tests
 ```bash
 mvn test
-# Expected: 95+ tests passing ✅
+# Expected: ≈50 tests passing ✅
 ```
 
 ### 4. Start Application
@@ -57,7 +57,7 @@ query {
 ## 🎯 What You Need to Know
 
 ### The Good News ✅
-- ✅ 95+ comprehensive tests
+- ✅ ≈50 comprehensive tests (unit tests in `graphql-service`)
 - ✅ Modern Java 25 code
 - ✅ Spring Boot 4.0 latest
 - ✅ Full error handling
@@ -68,7 +68,7 @@ query {
 - Java 11 → Java 25
 - Spring Boot 3.1 → 4.0
 - Item: Class → Record
-- 6 tests → 95+ tests
+- 6 tests → ≈50 tests
 - No validation → Full validation
 - Basic errors → Structured errors
 
@@ -76,8 +76,8 @@ query {
 - ItemService (business logic)
 - 4 exception types
 - GlobalGraphQLExceptionResolver
-- Flyway database migrations
-- 95+ comprehensive tests
+ - Flyway database migrations
+ - ≈50 comprehensive tests (unit tests in `graphql-service`)
 
 ---
 
@@ -117,7 +117,7 @@ Run this checklist:
 
 ```
 [ ] mvn clean install succeeds
-[ ] mvn test shows 95+ tests passing
+[ ] mvn test shows ≈50 tests passing
 [ ] mvn spring-boot:run starts without errors
 [ ] http://localhost:8083/graphiql is accessible
 [ ] Health check: http://localhost:8083/actuator/health returns UP
