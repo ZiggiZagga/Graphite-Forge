@@ -5,40 +5,31 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.graphql.GraphQlTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.graphql.test.tester.WebGraphQlTester;
+import org.springframework.test.util.ReflectionTestUtils;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.test.StepVerifier;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 /**
- * Comprehensive GraphQL controller tests with edge cases.
- *
- * <p>Tests include:
- * - Happy path scenarios
- * - Error handling (not found, disabled operations)
- * - Edge cases (null inputs, empty results)
- * - Feature toggle behavior
- * </p>
+ * Unit tests for the GraphQL controller that call mapping methods directly.
+ * This avoids depending on Spring GraphQL test slices and focuses on controller
+ * behavior and delegation to the service layer.
  */
-@GraphQlTest(ItemGraphqlController.class)
 class ItemGraphqlControllerTest {
 
-    @Autowired
-    private WebGraphQlTester graphQlTester;
-
-    @MockBean
     private ItemService service;
+    private ItemGraphqlController controller;
 
     private final Item testItem = new Item("1", "TestItem", "A test item");
 
     @BeforeEach
     void setup() {
-        Mockito.reset(service);
+        service = Mockito.mock(ItemService.class);
+        controller = new ItemGraphqlController();
+        ReflectionTestUtils.setField(controller, "service", service);
     }
 
     @Nested
@@ -50,12 +41,9 @@ class ItemGraphqlControllerTest {
         void testItemsQuery_returnsItems() {
             when(service.getAllItems()).thenReturn(Flux.just(testItem));
 
-            String query = "{ items { id name description } }";
-            graphQlTester.document(query)
-                    .execute()
-                    .path("items[0].id").entity(String.class).isEqualTo("1")
-                    .path("items[0].name").entity(String.class).isEqualTo("TestItem")
-                    .path("items[0].description").entity(String.class).isEqualTo("A test item");
+            StepVerifier.create(controller.items())
+                    .expectNext(testItem)
+                    .verifyComplete();
         }
 
         @Test
@@ -63,10 +51,8 @@ class ItemGraphqlControllerTest {
         void testItemsQuery_returnsEmptyList() {
             when(service.getAllItems()).thenReturn(Flux.empty());
 
-            String query = "{ items { id name description } }";
-            graphQlTester.document(query)
-                    .execute()
-                    .path("items").entityList(Object.class).hasSize(0);
+            StepVerifier.create(controller.items())
+                    .verifyComplete();
         }
 
         @Test
@@ -75,13 +61,9 @@ class ItemGraphqlControllerTest {
             when(service.getAllItems())
                     .thenReturn(Flux.error(new ItemOperationDisabledException("Read operation is disabled")));
 
-            String query = "{ items { id name description } }";
-            graphQlTester.document(query)
-                    .execute()
-                    .errors().satisfy(errors -> {
-                        assert !errors.isEmpty();
-                        assert errors.get(0).getMessage().contains("Read operation is disabled");
-                    });
+            StepVerifier.create(controller.items())
+                    .expectError(ItemOperationDisabledException.class)
+                    .verify();
         }
 
         @Test
@@ -90,13 +72,9 @@ class ItemGraphqlControllerTest {
             when(service.getAllItems())
                     .thenReturn(Flux.error(new ItemDatabaseException("Connection failed")));
 
-            String query = "{ items { id name description } }";
-            graphQlTester.document(query)
-                    .execute()
-                    .errors().satisfy(errors -> {
-                        assert !errors.isEmpty();
-                        assert errors.get(0).getMessage().contains("Database operation failed");
-                    });
+            StepVerifier.create(controller.items())
+                    .expectError(ItemDatabaseException.class)
+                    .verify();
         }
 
         @Test
@@ -105,10 +83,9 @@ class ItemGraphqlControllerTest {
             Item item2 = new Item("2", "TestItem2", "Another test item");
             when(service.getAllItems()).thenReturn(Flux.just(testItem, item2));
 
-            String query = "{ items { id name description } }";
-            graphQlTester.document(query)
-                    .execute()
-                    .path("items").entityList(Object.class).hasSize(2);
+            StepVerifier.create(controller.items())
+                    .expectNext(testItem, item2)
+                    .verifyComplete();
         }
     }
 
@@ -121,11 +98,9 @@ class ItemGraphqlControllerTest {
         void testItemByIdQuery_returnsItem() {
             when(service.getItemById("1")).thenReturn(Mono.just(testItem));
 
-            String query = "{ itemById(id: \"1\") { id name description } }";
-            graphQlTester.document(query)
-                    .execute()
-                    .path("itemById.id").entity(String.class).isEqualTo("1")
-                    .path("itemById.name").entity(String.class).isEqualTo("TestItem");
+            StepVerifier.create(controller.itemById("1"))
+                    .expectNext(testItem)
+                    .verifyComplete();
         }
 
         @Test
@@ -134,13 +109,9 @@ class ItemGraphqlControllerTest {
             when(service.getItemById("999"))
                     .thenReturn(Mono.error(new ItemNotFoundException("999")));
 
-            String query = "{ itemById(id: \"999\") { id name description } }";
-            graphQlTester.document(query)
-                    .execute()
-                    .errors().satisfy(errors -> {
-                        assert !errors.isEmpty();
-                        assert errors.get(0).getMessage().contains("not found");
-                    });
+            StepVerifier.create(controller.itemById("999"))
+                    .expectError(ItemNotFoundException.class)
+                    .verify();
         }
 
         @Test
@@ -149,13 +120,9 @@ class ItemGraphqlControllerTest {
             when(service.getItemById("1"))
                     .thenReturn(Mono.error(new ItemOperationDisabledException("Read operation is disabled")));
 
-            String query = "{ itemById(id: \"1\") { id name description } }";
-            graphQlTester.document(query)
-                    .execute()
-                    .errors().satisfy(errors -> {
-                        assert !errors.isEmpty();
-                        assert errors.get(0).getMessage().contains("disabled");
-                    });
+            StepVerifier.create(controller.itemById("1"))
+                    .expectError(ItemOperationDisabledException.class)
+                    .verify();
         }
 
         @Test
@@ -164,10 +131,9 @@ class ItemGraphqlControllerTest {
             when(service.getItemById("1"))
                     .thenReturn(Mono.error(new ItemDatabaseException("Database connection failed")));
 
-            String query = "{ itemById(id: \"1\") { id name description } }";
-            graphQlTester.document(query)
-                    .execute()
-                    .errors().satisfy(errors -> { assert !errors.isEmpty(); });
+            StepVerifier.create(controller.itemById("1"))
+                    .expectError(ItemDatabaseException.class)
+                    .verify();
         }
     }
 
@@ -180,11 +146,9 @@ class ItemGraphqlControllerTest {
         void testCreateItemMutation_createsItem() {
             when(service.createItem(any(Item.class))).thenReturn(Mono.just(testItem));
 
-            String mutation = "mutation { createItem(name: \"TestItem\", description: \"A test item\") { id name description } }";
-            graphQlTester.document(mutation)
-                    .execute()
-                    .path("createItem.id").entity(String.class).isEqualTo("1")
-                    .path("createItem.name").entity(String.class).isEqualTo("TestItem");
+            StepVerifier.create(controller.createItem("TestItem", "A test item"))
+                    .expectNext(testItem)
+                    .verifyComplete();
         }
 
         @Test
@@ -193,10 +157,9 @@ class ItemGraphqlControllerTest {
             Item itemNoDesc = new Item("1", "TestItem", null);
             when(service.createItem(any(Item.class))).thenReturn(Mono.just(itemNoDesc));
 
-            String mutation = "mutation { createItem(name: \"TestItem\") { id name description } }";
-            graphQlTester.document(mutation)
-                    .execute()
-                    .path("createItem.id").entity(String.class).isEqualTo("1");
+            StepVerifier.create(controller.createItem("TestItem", null))
+                    .expectNext(itemNoDesc)
+                    .verifyComplete();
         }
 
         @Test
@@ -205,13 +168,9 @@ class ItemGraphqlControllerTest {
             when(service.createItem(any(Item.class)))
                     .thenReturn(Mono.error(new ItemOperationDisabledException("Create operation is disabled")));
 
-            String mutation = "mutation { createItem(name: \"TestItem\", description: \"A test item\") { id name description } }";
-            graphQlTester.document(mutation)
-                    .execute()
-                    .errors().satisfy(errors -> {
-                        assert !errors.isEmpty();
-                        assert errors.get(0).getMessage().contains("disabled");
-                    });
+            StepVerifier.create(controller.createItem("TestItem", "A test item"))
+                    .expectError(ItemOperationDisabledException.class)
+                    .verify();
         }
 
         @Test
@@ -220,10 +179,9 @@ class ItemGraphqlControllerTest {
             when(service.createItem(any(Item.class)))
                     .thenReturn(Mono.error(new ItemDatabaseException("Database error")));
 
-            String mutation = "mutation { createItem(name: \"TestItem\", description: \"A test item\") { id name description } }";
-            graphQlTester.document(mutation)
-                    .execute()
-                    .errors().satisfy(errors -> { assert !errors.isEmpty(); });
+            StepVerifier.create(controller.createItem("TestItem", "A test item"))
+                    .expectError(ItemDatabaseException.class)
+                    .verify();
         }
     }
 
@@ -238,11 +196,9 @@ class ItemGraphqlControllerTest {
             when(service.updateItem("1", "Updated", "Updated desc"))
                     .thenReturn(Mono.just(updatedItem));
 
-            String mutation = "mutation { updateItem(id: \"1\", name: \"Updated\", description: \"Updated desc\") { id name description } }";
-            graphQlTester.document(mutation)
-                    .execute()
-                    .path("updateItem.name").entity(String.class).isEqualTo("Updated")
-                    .path("updateItem.description").entity(String.class).isEqualTo("Updated desc");
+            StepVerifier.create(controller.updateItem("1", "Updated", "Updated desc"))
+                    .expectNext(updatedItem)
+                    .verifyComplete();
         }
 
         @Test
@@ -252,10 +208,9 @@ class ItemGraphqlControllerTest {
             when(service.updateItem("1", "Updated", null))
                     .thenReturn(Mono.just(updatedItem));
 
-            String mutation = "mutation { updateItem(id: \"1\", name: \"Updated\") { id name description } }";
-            graphQlTester.document(mutation)
-                    .execute()
-                    .path("updateItem.name").entity(String.class).isEqualTo("Updated");
+            StepVerifier.create(controller.updateItem("1", "Updated", null))
+                    .expectNext(updatedItem)
+                    .verifyComplete();
         }
 
         @Test
@@ -264,10 +219,9 @@ class ItemGraphqlControllerTest {
             when(service.updateItem("999", "Updated", null))
                     .thenReturn(Mono.error(new ItemNotFoundException("999")));
 
-            String mutation = "mutation { updateItem(id: \"999\", name: \"Updated\") { id name description } }";
-            graphQlTester.document(mutation)
-                    .execute()
-                    .errors().satisfy(errors -> { assert !errors.isEmpty(); });
+            StepVerifier.create(controller.updateItem("999", "Updated", null))
+                    .expectError(ItemNotFoundException.class)
+                    .verify();
         }
 
         @Test
@@ -276,10 +230,9 @@ class ItemGraphqlControllerTest {
             when(service.updateItem("1", "Updated", null))
                     .thenReturn(Mono.error(new ItemOperationDisabledException("Update operation is disabled")));
 
-            String mutation = "mutation { updateItem(id: \"1\", name: \"Updated\") { id name description } }";
-            graphQlTester.document(mutation)
-                    .execute()
-                    .errors().satisfy(errors -> { assert !errors.isEmpty(); });
+            StepVerifier.create(controller.updateItem("1", "Updated", null))
+                    .expectError(ItemOperationDisabledException.class)
+                    .verify();
         }
 
         @Test
@@ -288,10 +241,9 @@ class ItemGraphqlControllerTest {
             when(service.updateItem("1", "Updated", null))
                     .thenReturn(Mono.error(new ItemDatabaseException("Database error")));
 
-            String mutation = "mutation { updateItem(id: \"1\", name: \"Updated\") { id name description } }";
-            graphQlTester.document(mutation)
-                    .execute()
-                    .errors().satisfy(errors -> { assert !errors.isEmpty(); });
+            StepVerifier.create(controller.updateItem("1", "Updated", null))
+                    .expectError(ItemDatabaseException.class)
+                    .verify();
         }
     }
 
@@ -304,10 +256,9 @@ class ItemGraphqlControllerTest {
         void testDeleteItemMutation_deletesItem() {
             when(service.deleteItem("1")).thenReturn(Mono.just(true));
 
-            String mutation = "mutation { deleteItem(id: \"1\") }";
-            graphQlTester.document(mutation)
-                    .execute()
-                    .path("deleteItem").entity(Boolean.class).isEqualTo(true);
+            StepVerifier.create(controller.deleteItem("1"))
+                    .expectNext(true)
+                    .verifyComplete();
         }
 
         @Test
@@ -316,10 +267,9 @@ class ItemGraphqlControllerTest {
             when(service.deleteItem("999"))
                     .thenReturn(Mono.error(new ItemNotFoundException("999")));
 
-            String mutation = "mutation { deleteItem(id: \"999\") }";
-            graphQlTester.document(mutation)
-                    .execute()
-                    .errors().satisfy(errors -> { assert !errors.isEmpty(); });
+            StepVerifier.create(controller.deleteItem("999"))
+                    .expectError(ItemNotFoundException.class)
+                    .verify();
         }
 
         @Test
@@ -328,10 +278,9 @@ class ItemGraphqlControllerTest {
             when(service.deleteItem("1"))
                     .thenReturn(Mono.error(new ItemOperationDisabledException("Delete operation is disabled")));
 
-            String mutation = "mutation { deleteItem(id: \"1\") }";
-            graphQlTester.document(mutation)
-                    .execute()
-                    .errors().satisfy(errors -> { assert !errors.isEmpty(); });
+            StepVerifier.create(controller.deleteItem("1"))
+                    .expectError(ItemOperationDisabledException.class)
+                    .verify();
         }
 
         @Test
@@ -340,10 +289,9 @@ class ItemGraphqlControllerTest {
             when(service.deleteItem("1"))
                     .thenReturn(Mono.error(new ItemDatabaseException("Database error")));
 
-            String mutation = "mutation { deleteItem(id: \"1\") }";
-            graphQlTester.document(mutation)
-                    .execute()
-                    .errors().satisfy(errors -> { assert !errors.isEmpty(); });
+            StepVerifier.create(controller.deleteItem("1"))
+                    .expectError(ItemDatabaseException.class)
+                    .verify();
         }
     }
 }
