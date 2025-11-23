@@ -132,4 +132,80 @@ public class ItemService {
                             .onErrorResume(e -> Mono.error(new ItemDatabaseException("Failed to delete item: " + id, e)));
                 });
     }
+
+    /**
+     * Retrieves all root items (items without parent) if read is enabled.
+     *
+     * @return Flux of root items
+     * @throws IllegalStateException if read operation is disabled
+     */
+    public Flux<Item> getRootItems() {
+        if (!features.isReadEnabled()) {
+            return Flux.error(new ItemOperationDisabledException("Read operation is disabled"));
+        }
+        return repo.findRootItems()
+                .onErrorResume(e -> Flux.error(new ItemDatabaseException("Failed to retrieve root items", e)));
+    }
+
+    /**
+     * Retrieves all child items of a parent if read is enabled.
+     *
+     * @param parentId the parent item ID (must not be blank)
+     * @return Flux of child items
+     * @throws IllegalStateException if read operation is disabled
+     * @throws ItemDatabaseException if database error occurs
+     */
+    public Flux<Item> getChildrenByParent(@NotBlank(message = "Parent ID cannot be blank") String parentId) {
+        if (!features.isReadEnabled()) {
+            return Flux.error(new ItemOperationDisabledException("Read operation is disabled"));
+        }
+        return repo.findByParentId(parentId)
+                .onErrorResume(e -> Flux.error(new ItemDatabaseException("Failed to retrieve children for parent: " + parentId, e)));
+    }
+
+    /**
+     * Moves an item to a new parent if update is enabled.
+     * Prevents circular references.
+     *
+     * @param itemId the item to move (must not be blank)
+     * @param parentId the new parent ID (must not be blank)
+     * @return Mono of updated Item
+     * @throws IllegalStateException if update operation is disabled
+     * @throws ItemNotFoundException if item not found
+     * @throws IllegalArgumentException if circular reference detected
+     * @throws ItemDatabaseException if database error occurs
+     */
+    public Mono<Item> moveItemToParent(
+            @NotBlank(message = "Item ID cannot be blank") String itemId,
+            @NotBlank(message = "Parent ID cannot be blank") String parentId) {
+        if (!features.isUpdateEnabled()) {
+            return Mono.error(new ItemOperationDisabledException("Update operation is disabled"));
+        }
+
+        // Prevent self-referencing
+        if (itemId.equals(parentId)) {
+            return Mono.error(new IllegalArgumentException("An item cannot be its own parent"));
+        }
+
+        return repo.findById(itemId)
+                .switchIfEmpty(Mono.error(new ItemNotFoundException(itemId)))
+                .flatMap(existingItem -> 
+                    // Check for circular reference
+                    repo.isValidParent(itemId, parentId)
+                        .flatMap(isValid -> {
+                            if (!isValid) {
+                                return Mono.error(new IllegalArgumentException(
+                                    "Cannot move item to this parent: would create circular reference"
+                                ));
+                            }
+                            // Create updated item with new parent
+                            Item movedItem = new Item(existingItem.id(), existingItem.name(), 
+                                                     existingItem.description(), parentId);
+                            return repo.save(movedItem);
+                        })
+                )
+                .onErrorResume(ItemNotFoundException.class, e -> Mono.error(e))
+                .onErrorResume(IllegalArgumentException.class, e -> Mono.error(e))
+                .onErrorResume(e -> Mono.error(new ItemDatabaseException("Failed to move item: " + itemId, e)));
+    }
 }

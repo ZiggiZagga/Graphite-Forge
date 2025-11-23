@@ -47,14 +47,16 @@ public class ItemGraphqlController {
      *
      * @param name item name (required)
      * @param description item description (optional)
+     * @param parentId parent item ID (optional, for hierarchical creation)
      * @return Mono of created Item
      */
     @MutationMapping
-    public Mono<Item> createItem(@Argument String name, @Argument String description) {
+    public Mono<Item> createItem(@Argument String name, @Argument String description, 
+                                 @Argument String parentId) {
         if (name == null || name.isBlank()) {
             return Mono.error(new IllegalArgumentException("Item name is required and cannot be blank"));
         }
-        Item item = new Item(null, name, description);
+        Item item = new Item(null, name, description, parentId);
         return service.createItem(item);
     }
 
@@ -87,5 +89,47 @@ public class ItemGraphqlController {
             return Mono.error(new IllegalArgumentException("Item ID is required and cannot be blank"));
         }
         return service.deleteItem(id);
+    }
+
+    /**
+     * Returns all root items (items without parent).
+     *
+     * @return Flux of root items
+     */
+    @QueryMapping
+    public Flux<Item> rootItems() {
+        return service.getRootItems();
+    }
+
+    /**
+     * Returns all children of a parent item.
+     *
+     * @param parentId the parent item ID
+     * @return Flux of child items
+     */
+    @QueryMapping
+    public Flux<Item> childrenByParent(@Argument String parentId) {
+        if (parentId == null || parentId.isBlank()) {
+            return Flux.error(new IllegalArgumentException("Parent ID is required and cannot be blank"));
+        }
+        return service.getChildrenByParent(parentId);
+    }
+
+    /**
+     * Moves an item to a new parent.
+     *
+     * @param id the item to move
+     * @param parentId the new parent ID
+     * @return Mono of moved item
+     */
+    @MutationMapping
+    public Mono<Item> moveItem(@Argument String id, @Argument String parentId) {
+        if (id == null || id.isBlank()) {
+            return Mono.error(new IllegalArgumentException("Item ID is required and cannot be blank"));
+        }
+        if (parentId == null || parentId.isBlank()) {
+            return Mono.error(new IllegalArgumentException("Parent ID is required and cannot be blank"));
+        }
+        return service.moveItemToParent(id, parentId);
     }
 }
