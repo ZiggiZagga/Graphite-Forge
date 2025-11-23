@@ -51,8 +51,12 @@ public class ItemService {
         }
         return repo.findById(id)
                 .switchIfEmpty(Mono.error(new ItemNotFoundException(id)))
-                .onErrorResume(ItemNotFoundException.class, e -> Mono.error(e))
-                .onErrorResume(e -> Mono.error(new ItemDatabaseException("Failed to retrieve item: " + id, e)));
+                .onErrorMap(e -> {
+                    if (e instanceof ItemNotFoundException) {
+                        return e;  // Preserve ItemNotFoundException without wrapping
+                    }
+                    return new ItemDatabaseException("Failed to retrieve item: " + id, e);
+                });
     }
 
     /**

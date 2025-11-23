@@ -152,6 +152,22 @@ class ItemGraphqlControllerTest {
         }
 
         @Test
+        @DisplayName("should reject null name")
+        void testCreateItemMutation_nullName() {
+            StepVerifier.create(controller.createItem(null, "A test item"))
+                    .expectError(IllegalArgumentException.class)
+                    .verify();
+        }
+
+        @Test
+        @DisplayName("should reject blank name")
+        void testCreateItemMutation_blankName() {
+            StepVerifier.create(controller.createItem("   ", "A test item"))
+                    .expectError(IllegalArgumentException.class)
+                    .verify();
+        }
+
+        @Test
         @DisplayName("should create item without description")
         void testCreateItemMutation_createsItemWithoutDescription() {
             Item itemNoDesc = new Item("1", "TestItem", null);
@@ -199,6 +215,22 @@ class ItemGraphqlControllerTest {
             StepVerifier.create(controller.updateItem("1", "Updated", "Updated desc"))
                     .expectNext(updatedItem)
                     .verifyComplete();
+        }
+
+        @Test
+        @DisplayName("should reject null ID")
+        void testUpdateItemMutation_nullId() {
+            StepVerifier.create(controller.updateItem(null, "Updated", null))
+                    .expectError(IllegalArgumentException.class)
+                    .verify();
+        }
+
+        @Test
+        @DisplayName("should reject blank ID")
+        void testUpdateItemMutation_blankId() {
+            StepVerifier.create(controller.updateItem("   ", "Updated", null))
+                    .expectError(IllegalArgumentException.class)
+                    .verify();
         }
 
         @Test
@@ -259,6 +291,22 @@ class ItemGraphqlControllerTest {
             StepVerifier.create(controller.deleteItem("1"))
                     .expectNext(true)
                     .verifyComplete();
+        }
+
+        @Test
+        @DisplayName("should reject null ID")
+        void testDeleteItemMutation_nullId() {
+            StepVerifier.create(controller.deleteItem(null))
+                    .expectError(IllegalArgumentException.class)
+                    .verify();
+        }
+
+        @Test
+        @DisplayName("should reject blank ID")
+        void testDeleteItemMutation_blankId() {
+            StepVerifier.create(controller.deleteItem("   "))
+                    .expectError(IllegalArgumentException.class)
+                    .verify();
         }
 
         @Test
