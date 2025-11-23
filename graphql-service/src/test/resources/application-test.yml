@@ -19,6 +19,14 @@ spring:
   graphql:
     graphiql:
       enabled: true
+  cloud:
+    config:
+      enabled: false
+      import-check:
+        enabled: false
+  autoconfigure:
+    exclude:
+      - org.springframework.cloud.autoconfigure.LifecycleMvcEndpointAutoConfiguration
 
 eureka:
   client:
@@ -42,9 +50,8 @@ logging:
     root: INFO
     com.example.graphql: DEBUG
 
-spring:
-  security:
-    oauth2:
-      resourceserver:
-        jwt:
-          issuer-uri: http://localhost:8081/realms/myrealm
+security:
+  oauth2:
+    resourceserver:
+      jwt:
+        issuer-uri: http://localhost:8081/realms/myrealm

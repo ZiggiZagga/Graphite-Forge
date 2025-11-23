@@ -1,16 +1,28 @@
+# Hierarchical Item type with parent-child relationships
 type Item {
   id: ID!
   name: String!
   description: String
+  parentId: ID
+  # Note: Direct nested queries (parent/children) require custom resolvers
 }
 
 type Query {
+  # Flat queries
   items: [Item!]!
   itemById(id: ID!): Item
+  
+  # Hierarchy queries
+  rootItems: [Item!]!
+  childrenByParent(parentId: ID!): [Item!]!
 }
 
 type Mutation {
-  createItem(name: String!, description: String): Item
+  # Basic CRUD
+  createItem(name: String!, description: String, parentId: ID): Item
   updateItem(id: ID!, name: String, description: String): Item
   deleteItem(id: ID!): Boolean
+  
+  # Hierarchy operations
+  moveItem(id: ID!, parentId: ID!): Item
 }

@@ -1,2 +1,4 @@
 /workspaces/Graphite-Forge/graphql-service/src/test/java/com/example/graphql/ItemGraphqlControllerTest.java
+/workspaces/Graphite-Forge/graphql-service/src/test/java/com/example/graphql/ItemGraphqlIntegrationTest.java
+/workspaces/Graphite-Forge/graphql-service/src/test/java/com/example/graphql/ItemHierarchyTest.java
 /workspaces/Graphite-Forge/graphql-service/src/test/java/com/example/graphql/ItemServiceTest.java

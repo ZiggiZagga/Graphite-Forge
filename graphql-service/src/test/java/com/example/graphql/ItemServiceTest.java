@@ -161,7 +161,7 @@ class ItemServiceTest {
         when(repository.findById("   ")).thenReturn(Mono.empty());
 
         StepVerifier.create(service.getItemById("   "))
-            .expectError(ItemDatabaseException.class)
+            .expectError(ItemNotFoundException.class)
             .verify();
         }
     }

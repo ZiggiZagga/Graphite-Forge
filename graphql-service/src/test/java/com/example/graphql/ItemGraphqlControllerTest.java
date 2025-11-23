@@ -146,7 +146,7 @@ class ItemGraphqlControllerTest {
         void testCreateItemMutation_createsItem() {
             when(service.createItem(any(Item.class))).thenReturn(Mono.just(testItem));
 
-            StepVerifier.create(controller.createItem("TestItem", "A test item"))
+            StepVerifier.create(controller.createItem("TestItem", "A test item", null))
                     .expectNext(testItem)
                     .verifyComplete();
         }
@@ -154,7 +154,7 @@ class ItemGraphqlControllerTest {
         @Test
         @DisplayName("should reject null name")
         void testCreateItemMutation_nullName() {
-            StepVerifier.create(controller.createItem(null, "A test item"))
+            StepVerifier.create(controller.createItem(null, "A test item", null))
                     .expectError(IllegalArgumentException.class)
                     .verify();
         }
@@ -162,7 +162,7 @@ class ItemGraphqlControllerTest {
         @Test
         @DisplayName("should reject blank name")
         void testCreateItemMutation_blankName() {
-            StepVerifier.create(controller.createItem("   ", "A test item"))
+            StepVerifier.create(controller.createItem("   ", "A test item", null))
                     .expectError(IllegalArgumentException.class)
                     .verify();
         }
@@ -173,7 +173,7 @@ class ItemGraphqlControllerTest {
             Item itemNoDesc = new Item("1", "TestItem", null);
             when(service.createItem(any(Item.class))).thenReturn(Mono.just(itemNoDesc));
 
-            StepVerifier.create(controller.createItem("TestItem", null))
+            StepVerifier.create(controller.createItem("TestItem", null, null))
                     .expectNext(itemNoDesc)
                     .verifyComplete();
         }
@@ -184,7 +184,7 @@ class ItemGraphqlControllerTest {
             when(service.createItem(any(Item.class)))
                     .thenReturn(Mono.error(new ItemOperationDisabledException("Create operation is disabled")));
 
-            StepVerifier.create(controller.createItem("TestItem", "A test item"))
+            StepVerifier.create(controller.createItem("TestItem", "A test item", null))
                     .expectError(ItemOperationDisabledException.class)
                     .verify();
         }
@@ -195,7 +195,7 @@ class ItemGraphqlControllerTest {
             when(service.createItem(any(Item.class)))
                     .thenReturn(Mono.error(new ItemDatabaseException("Database error")));
 
-            StepVerifier.create(controller.createItem("TestItem", "A test item"))
+            StepVerifier.create(controller.createItem("TestItem", "A test item", null))
                     .expectError(ItemDatabaseException.class)
                     .verify();
         }
