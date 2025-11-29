@@ -5,7 +5,7 @@
   <parent>
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-parent</artifactId>
-    <version>4.0.0-RC2</version>
+    <version>4.0.0</version>
     <relativePath/>
   </parent>
   <dependencyManagement>
@@ -14,7 +14,7 @@
       <dependency>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-dependencies</artifactId>
-        <version>4.0.0-RC2</version>
+        <version>4.0.0</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -23,7 +23,7 @@
       <dependency>
         <groupId>org.springframework.cloud</groupId>
         <artifactId>spring-cloud-dependencies</artifactId>
-        <version>2024.0.0</version>
+        <version>2025.0.0</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -152,6 +152,9 @@
         <version>3.14.1</version>
         <configuration>
           <release>25</release>
+          <compilerArgs>
+            <arg>-Xlint:unchecked</arg>
+          </compilerArgs>
         </configuration>
       </plugin>
       <plugin>

@@ -123,14 +123,13 @@ class ItemServiceTest {
         }
 
         @Test
-        @DisplayName("should return error when item not found")
+        @DisplayName("should return NOT_FOUND error when item not found")
         void testGetItemById_NotFound() {
             when(repository.findById("999")).thenReturn(Mono.empty());
 
-        // Service currently wraps downstream errors; assert the database-wrapped exception
-        StepVerifier.create(service.getItemById("999"))
-            .expectError(ItemDatabaseException.class)
-            .verify();
+            StepVerifier.create(service.getItemById("999"))
+                    .expectError(ItemNotFoundException.class)
+                    .verify();
         }
 
         @Test
@@ -162,7 +161,7 @@ class ItemServiceTest {
         when(repository.findById("   ")).thenReturn(Mono.empty());
 
         StepVerifier.create(service.getItemById("   "))
-            .expectError(ItemDatabaseException.class)
+            .expectError(ItemNotFoundException.class)
             .verify();
         }
     }

@@ -1,3 +1,4 @@
+/workspaces/Graphite-Forge/graphql-service/src/main/java/com/example/graphql/CorsConfig.java
 /workspaces/Graphite-Forge/graphql-service/src/main/java/com/example/graphql/CrudFeatures.java
 /workspaces/Graphite-Forge/graphql-service/src/main/java/com/example/graphql/GlobalGraphQLExceptionResolver.java
 /workspaces/Graphite-Forge/graphql-service/src/main/java/com/example/graphql/GraphqlServiceApplication.java

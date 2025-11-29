@@ -1,0 +1,63 @@
+spring:
+  application:
+    name: config-server
+  
+  autoconfigure:
+    exclude:
+      - org.springframework.cloud.config.server.config.ConfigServerAutoConfiguration
+      - org.springframework.cloud.stream.config.BindingServiceConfiguration
+      - org.springframework.cloud.stream.binder.kafka.config.KafkaAutoConfiguration
+      - org.springframework.cloud.config.server.EnableConfigServerConfiguration
+  
+  # R2DBC Configuration
+  r2dbc:
+    url: r2dbc:h2:mem:///configdb?mode=MySQL
+    username: sa
+    password: 
+    driver-class-name: org.h2.Driver
+  
+  # Flyway Configuration
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+      
+  # RabbitMQ Configuration for Spring Cloud Bus (disabled in test)
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest
+    virtual-host: /
+    
+  # Cloud Bus disabled in test
+  cloud:
+    bus:
+      enabled: false
+    stream:
+      enabled: false
+
+# Server Configuration
+server:
+  port: 0
+
+# Actuator Configuration
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: when-authorized
+
+# Custom Config Server Properties
+config-server:
+  encryption-password: test-encryption-password
+  enable-bus-refresh: false
+  message-broker: none
+
+# Logging Configuration
+logging:
+  level:
+    root: WARN
+    com.example.configserver: DEBUG

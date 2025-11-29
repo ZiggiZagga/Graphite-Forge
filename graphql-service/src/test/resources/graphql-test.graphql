@@ -1,0 +1,35 @@
+query GetItems {
+  items {
+    id
+    name
+    description
+  }
+}
+
+query GetItemById($id: String!) {
+  itemById(id: $id) {
+    id
+    name
+    description
+  }
+}
+
+mutation CreateItem($name: String!, $description: String) {
+  createItem(name: $name, description: $description) {
+    id
+    name
+    description
+  }
+}
+
+mutation UpdateItem($id: String!, $name: String, $description: String) {
+  updateItem(id: $id, name: $name, description: $description) {
+    id
+    name
+    description
+  }
+}
+
+mutation DeleteItem($id: String!) {
+  deleteItem(id: $id)
+}
