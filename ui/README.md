@@ -1,9 +1,3 @@
-Graphite UI
-===========
-
-This folder contains a lightweight Next.js + Tailwind + Apollo Client scaffold for the Graphite-Forge project.
-
-Quick start (from repository root):
 
 Graphite UI
 ===========
