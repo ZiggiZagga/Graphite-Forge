@@ -1,5 +1,5 @@
-com/example/graphql/ItemRepository.class
 com/example/graphql/ItemNotFoundException.class
+com/example/graphql/ItemRepository.class
 com/example/graphql/CorsConfig.class
 com/example/graphql/Item.class
 com/example/graphql/ItemGraphqlController.class

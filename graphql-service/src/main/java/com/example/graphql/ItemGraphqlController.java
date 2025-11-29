@@ -22,6 +22,33 @@ public class ItemGraphqlController {
     private ItemService service;
 
     /**
+     * Validates that a string ID is not null or blank.
+     * 
+     * @param id the ID to validate
+     * @param fieldName the field name for error messages
+     * @return error Mono if invalid, else null
+     */
+    private Mono<Void> validateNonBlankId(String id, String fieldName) {
+        if (id == null || id.isBlank()) {
+            return Mono.error(new IllegalArgumentException(fieldName + " is required and cannot be blank"));
+        }
+        return Mono.empty();
+    }
+
+    /**
+     * Validates that a name string is not null or blank.
+     * 
+     * @param name the name to validate
+     * @return error Mono if invalid, else null
+     */
+    private Mono<Void> validateNonBlankName(String name) {
+        if (name == null || name.isBlank()) {
+            return Mono.error(new IllegalArgumentException("Item name is required and cannot be blank"));
+        }
+        return Mono.empty();
+    }
+
+    /**
      * Returns all items if read is enabled.
      *
      * @return Flux of Item
@@ -53,11 +80,11 @@ public class ItemGraphqlController {
     @MutationMapping
     public Mono<Item> createItem(@Argument String name, @Argument String description, 
                                  @Argument String parentId) {
-        if (name == null || name.isBlank()) {
-            return Mono.error(new IllegalArgumentException("Item name is required and cannot be blank"));
-        }
-        Item item = new Item(null, name, description, parentId);
-        return service.createItem(item);
+        return validateNonBlankName(name)
+                .then(Mono.defer(() -> {
+                    Item item = new Item(null, name, description, parentId);
+                    return service.createItem(item);
+                }));
     }
 
     /**
@@ -71,10 +98,8 @@ public class ItemGraphqlController {
     @MutationMapping
     public Mono<Item> updateItem(@Argument String id, @Argument String name,
                                  @Argument String description) {
-        if (id == null || id.isBlank()) {
-            return Mono.error(new IllegalArgumentException("Item ID is required and cannot be blank"));
-        }
-        return service.updateItem(id, name, description);
+        return validateNonBlankId(id, "Item ID")
+                .then(Mono.defer(() -> service.updateItem(id, name, description)));
     }
 
     /**
@@ -85,10 +110,8 @@ public class ItemGraphqlController {
      */
     @MutationMapping
     public Mono<Boolean> deleteItem(@Argument String id) {
-        if (id == null || id.isBlank()) {
-            return Mono.error(new IllegalArgumentException("Item ID is required and cannot be blank"));
-        }
-        return service.deleteItem(id);
+        return validateNonBlankId(id, "Item ID")
+                .then(Mono.defer(() -> service.deleteItem(id)));
     }
 
     /**
@@ -124,12 +147,8 @@ public class ItemGraphqlController {
      */
     @MutationMapping
     public Mono<Item> moveItem(@Argument String id, @Argument String parentId) {
-        if (id == null || id.isBlank()) {
-            return Mono.error(new IllegalArgumentException("Item ID is required and cannot be blank"));
-        }
-        if (parentId == null || parentId.isBlank()) {
-            return Mono.error(new IllegalArgumentException("Parent ID is required and cannot be blank"));
-        }
-        return service.moveItemToParent(id, parentId);
+        return validateNonBlankId(id, "Item ID")
+                .then(validateNonBlankId(parentId, "Parent ID"))
+                .then(Mono.defer(() -> service.moveItemToParent(id, parentId)));
     }
 }

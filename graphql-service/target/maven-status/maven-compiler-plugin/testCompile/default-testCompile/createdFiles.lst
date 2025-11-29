@@ -13,8 +13,8 @@ com/example/graphql/ItemHierarchyTest$DeleteHierarchicalTests.class
 com/example/graphql/ItemHierarchyTest$MoveItemTests.class
 com/example/graphql/ItemHierarchyTest.class
 com/example/graphql/ItemServiceTest$UpdateItemTests.class
-com/example/graphql/ItemGraphqlIntegrationTest$DeleteItemMutationTests.class
 com/example/graphql/ItemGraphqlControllerTest$DeleteItemMutationTests.class
+com/example/graphql/ItemGraphqlIntegrationTest$DeleteItemMutationTests.class
 com/example/graphql/ItemServiceTest$GetAllItemsTests.class
 com/example/graphql/ItemServiceTest$GetItemByIdTests.class
 com/example/graphql/ItemGraphqlControllerTest.class

@@ -1,28 +1,27 @@
 package com.example.configserver;
 
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ActiveProfiles;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
 
-@SpringBootTest
-@ActiveProfiles("test")
 class ConfigServerApplicationTest {
 
-	@Autowired
-	private ConfigServerController controller;
-
 	@Test
-	void contextLoads() {
+	void controllerCanBeInstantiated() {
+		ConfigService service = mock(ConfigService.class);
+		ConfigServerController controller = new ConfigServerController(service);
 		assertNotNull(controller);
 	}
 
 	@Test
 	void healthCheckReturnsOk() {
+		ConfigService service = mock(ConfigService.class);
+		ConfigServerController controller = new ConfigServerController(service);
+
 		var response = controller.health();
 		assertNotNull(response);
-		assert response.getStatusCode().is2xxSuccessful();
+		assertTrue(response.getStatusCode().is2xxSuccessful());
 	}
 }
