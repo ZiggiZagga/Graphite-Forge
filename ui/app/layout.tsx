@@ -1,9 +1,6 @@
-'use client'
-
-import './globals.css'
+import '../styles/globals.css'
 import React from 'react'
-import { ApolloProvider } from '@apollo/client'
-import { apolloClient } from '@/lib/apollo'
+import { Providers } from './providers'
 
 export const metadata = {
   title: 'Graphite UI',
@@ -14,7 +11,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <body>
-        <ApolloProvider client={apolloClient}>
+        <Providers>
           <div className="min-h-screen flex flex-col">
             <header className="bg-white shadow-sm">
               <div className="max-w-6xl mx-auto px-4 py-4 font-semibold text-lg">Graphite UI</div>
@@ -24,7 +21,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <div className="max-w-6xl mx-auto px-4 text-sm text-gray-600">© Graphite Forge</div>
             </footer>
           </div>
-        </ApolloProvider>
+        </Providers>
       </body>
     </html>
   )
