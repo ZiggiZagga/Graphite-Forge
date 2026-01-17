@@ -206,27 +206,28 @@ main() {
     local minio_up=false
     local gateway_up=false
     
-    if curl -sf "$KEYCLOAK_URL/realms/dev/.well-known/openid-configuration" > /dev/null 2>&1; then
-        print_success "Keycloak (IronBucket) is accessible"
+    # Check Docker containers (not HTTP - ports aren't exposed to host)
+    if docker ps --filter "name=steel-hammer-keycloak" --filter "status=running" --format '{{.Names}}' | grep -q "steel-hammer-keycloak"; then
+        print_success "Keycloak (IronBucket) container is running"
         keycloak_up=true
     else
-        print_warning "Keycloak is NOT accessible at $KEYCLOAK_URL"
+        print_warning "Keycloak container is not running"
         ironbucket_ok=false
     fi
     
-    if curl -sf "$MINIO_URL/minio/health/live" > /dev/null 2>&1; then
-        print_success "MinIO (IronBucket) is accessible"
+    if docker ps --filter "name=steel-hammer-minio" --filter "status=running" --format '{{.Names}}' | grep -q "steel-hammer-minio"; then
+        print_success "MinIO (IronBucket) container is running"
         minio_up=true
     else
-        print_warning "MinIO is NOT accessible at $MINIO_URL"
+        print_warning "MinIO container is not running"
         ironbucket_ok=false
     fi
     
-    if curl -sf "$GATEWAY_URL/actuator/health-check" > /dev/null 2>&1; then
-        print_success "Sentinel-Gear (IronBucket) is accessible"
+    if docker ps --filter "name=steel-hammer-sentinel-gear" --filter "status=running" --format '{{.Names}}' | grep -q "steel-hammer-sentinel-gear"; then
+        print_success "Sentinel-Gear (IronBucket) container is running"
         gateway_up=true
     else
-        print_warning "Sentinel-Gear gateway is NOT accessible at $GATEWAY_URL"
+        print_warning "Sentinel-Gear container is not running"
         ironbucket_ok=false
     fi
     
@@ -283,6 +284,13 @@ main() {
                     echo ""
                 else
                     print_error "Failed to start IronBucket services"
+                    echo ""
+                    print_warning "Showing IronBucket service status and logs..."
+                    echo ""
+                    docker-compose -f docker-compose-steel-hammer.yml ps 2>&1 | tail -20
+                    echo ""
+                    print_info "Recent logs from IronBucket services:"
+                    docker-compose -f docker-compose-steel-hammer.yml logs --tail=50 2>&1 | tail -100
                     exit 1
                 fi
                 
@@ -363,10 +371,20 @@ main() {
     rm -f "$PROJECT_ROOT/docker-compose.override.yml"
     
     print_info "Starting Graphite-Forge services via docker-compose..."
-    if docker-compose up -d 2>&1 | grep -E 'Starting|Created|Done'; then
+    if docker-compose up -d 2>&1 | tee /tmp/docker-compose-up.log | grep -E 'Starting|Created|Done'; then
         print_success "Graphite-Forge services started"
     else
-        print_warning "Services may have started with warnings"
+        print_error "Failed to start Graphite-Forge services"
+        echo ""
+        print_warning "Docker Compose output:"
+        cat /tmp/docker-compose-up.log
+        echo ""
+        print_warning "Showing container status:"
+        docker-compose ps 2>&1
+        echo ""
+        print_info "Recent logs:"
+        docker-compose logs --tail=50 2>&1 | tail -100
+        exit 1
     fi
     
     echo ""
@@ -375,7 +393,18 @@ main() {
     print_step "6" "Wait for Graphite-Forge Services to Initialize"
     
     if ! wait_for_service "$GRAPHQL_URL/actuator/health" "GraphQL Service" 120; then
-        print_warning "GraphQL Service failed to start - check logs: docker-compose logs graphql-service"
+        print_error "GraphQL Service failed to start or become healthy"
+        echo ""
+        print_warning "Container status:"
+        docker-compose ps graphql-service 2>&1
+        echo ""
+        print_info "Recent logs from GraphQL Service:"
+        docker-compose logs --tail=100 graphql-service 2>&1
+        echo ""
+        print_info "To continue debugging:"
+        echo "  docker-compose logs -f graphql-service"
+        echo "  docker-compose exec graphql-service bash"
+        exit 1
     fi
     
     echo ""
