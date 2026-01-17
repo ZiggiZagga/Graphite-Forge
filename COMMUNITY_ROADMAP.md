@@ -96,6 +96,107 @@ Help Wanted:
 
 ---
 
+## 💡 Recent Community Insights
+
+### What We Learned Building Together
+
+During the development of our comprehensive test reporting system, we discovered several key insights that will shape how we build features going forward:
+
+#### 1. **Automation Wins Hearts**
+The community values:
+- Single commands that "just work" → `./scripts/comprehensive-test-reporter.sh --all`
+- Automatic problem detection → failures converted to todos automatically
+- Clear priorities → CRITICAL/HIGH/MEDIUM/LOW with deadlines
+- Multiple formats → Markdown for humans, JSON for machines, HTML for browsers
+
+**Future Application**: Every major feature should have a single-command "try it" experience.
+
+#### 2. **Documentation as Code Works**
+Roadmap test suite (230+ tests) showed:
+- Tests can serve as living specifications
+- Executable documentation never gets out of sync
+- Community can validate priorities through tests
+- Progress tracking becomes automated
+- Feature dependencies become clear
+
+**Future Application**: All features will have executable acceptance tests before implementation.
+
+#### 3. **Visibility Drives Engagement**
+When developers see:
+- Real-time progress (60% pass rate, 2 todos pending)
+- Clear next steps (fix CRITICAL graphql-service issue)
+- Actionable items (not vague "tests failed")
+- Severity and deadlines (Same Day, 1-2 Days)
+
+They know exactly how to help.
+
+**Future Application**: Every feature will generate clear, actionable status updates.
+
+#### 4. **Marathon Principles Apply to Community Work**
+- Depth over speed: Comprehensive test reporter took one iteration, works perfectly
+- Tests as specifications: 230+ roadmap tests validate planning
+- Sequential phases: Can't do Phase 3 without Phase 2 foundation
+- Integrated from start: CI/CD ready, not bolted on later
+- Clear dependencies: No circular deps, no surprises
+
+**Future Application**: Community features will follow same principles.
+
+#### 5. **Infrastructure Clarity Matters**
+Simple questions like "do ports conflict?" reveal:
+- Need for clear architecture diagrams
+- Importance of explaining Docker networking
+- Value of examples over assumptions
+- Community wants to understand, not just use
+
+**Future Application**: Every architectural decision gets documented with "why" and "how".
+
+### How This Shapes Our Roadmap
+
+**Immediate Changes**:
+- ✅ All features now have acceptance tests (roadmap test suite)
+- ✅ Test failures auto-generate todos (comprehensive reporter)
+- ✅ Progress visible in real-time (LATEST-SUMMARY.md)
+- ✅ Multiple stakeholder formats (MD, JSON, HTML, Summary)
+
+**Going Forward**:
+- 🎯 Every feature: single command experience
+- 🎯 Every feature: executable specifications
+- 🎯 Every feature: automated todo generation
+- 🎯 Every feature: clear severity and deadlines
+- 🎯 Every feature: progress visible in real-time
+
+### Community Feature Request Template (Updated)
+
+Based on learnings, we now ask:
+
+```markdown
+## Feature Request
+**Name**: [Feature Name]
+**Priority**: [CRITICAL/HIGH/MEDIUM/LOW]
+**Estimated Effort**: [X days]
+**Dependencies**: [List other features]
+
+## Success Criteria (Executable Tests)
+- [ ] Test case 1
+- [ ] Test case 2
+- [ ] Test case 3
+
+## Single Command Experience
+`./scripts/[feature-name].sh --action`
+
+## Documentation
+- [ ] Quick reference guide (5 min)
+- [ ] Complete guide (30 min)
+- [ ] Architecture diagram
+- [ ] Examples and tutorials
+
+## Community Help Needed
+- [ ] Backend (X person-days)
+- [ ] Frontend (X person-days)
+- [ ] Testing (X person-days)
+- [ ] Documentation (X person-days)
+```
+
 ## 🎁 Top Community Requests
 
 ### 1. **REST API** (8 upvotes 👍)
