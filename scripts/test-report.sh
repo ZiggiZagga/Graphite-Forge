@@ -85,6 +85,8 @@ fi
 
 # Try to compile and run tests to see which pass
 TEST_OUTPUT=$(mktemp)
+TEST_RESULTS=$(mktemp)
+MAVEN_ERRORS=$(mktemp)
 echo "Attempting to compile and run tests..."
 if mvn test 2>&1 > "$TEST_OUTPUT"; then
     BACKEND_EXIT_CODE=0
@@ -95,14 +97,27 @@ if mvn test 2>&1 > "$TEST_OUTPUT"; then
     BACKEND_SKIPPED=$(grep "Skipped:" "$TEST_OUTPUT" | tail -1 | grep -oP 'Skipped: \K\d+' || echo "0")
     BACKEND_FAILED=$((BACKEND_FAILURES + BACKEND_ERRORS))
     BACKEND_PASSED=$((BACKEND_TESTS_RUN - BACKEND_FAILED - BACKEND_SKIPPED))
+    
+    # Extract failed test details from Maven output
+    grep -E "(<<< FAILURE!|<<< ERROR!)" "$TEST_OUTPUT" -B 1 > "$TEST_RESULTS" 2>/dev/null || true
+    grep -E "^\[ERROR\].*Test.*::" "$TEST_OUTPUT" >> "$TEST_RESULTS" 2>/dev/null || true
+    
     print_success "Tests compiled and ran successfully"
 else
     BACKEND_EXIT_CODE=$?
-    # Compilation failed - all tests need implementation
+    # Compilation failed - extract ALL Maven errors
     BACKEND_TESTS_RUN=0
     BACKEND_PASSED=0
     BACKEND_FAILED=$BACKEND_TESTS_WRITTEN
     BACKEND_SKIPPED=0
+    
+    # Extract compilation errors from Maven
+    echo "Extracting Maven compilation errors..."
+    grep -E "^\[ERROR\]" "$TEST_OUTPUT" | grep -v "Re-run Maven" | grep -v "mvn <args>" | head -200 > "$MAVEN_ERRORS" 2>/dev/null || true
+    
+    # Also extract specific compilation errors
+    grep -E "(cannot find symbol|package .* does not exist|class .* is public)" "$TEST_OUTPUT" -A 2 | head -300 >> "$MAVEN_ERRORS" 2>/dev/null || true
+    
     print_warning "Compilation failed (exit code: $BACKEND_EXIT_CODE)"
 fi
 
@@ -268,22 +283,83 @@ Tests Skipped: $BACKEND_SKIPPED
 
 **Status:** $([ $BACKEND_FAILED -eq 0 ] && echo "✅ ALL PASSING - Ready for production" || echo "🔴 FAILING - Needs Sprint 2 implementation")
 
+### Failed Tests Details
+
+EOF
+
+if [ $BACKEND_FAILED -gt 0 ]; then
+    cat >> "$REPORT_FILE" << 'EOF'
+The following backend tests are failing and need implementation:
+
+```
+EOF
+    
+    if [ $BACKEND_EXIT_CODE -ne 0 ]; then
+        # Compilation failed - show Maven errors
+        echo "📋 Maven Compilation Errors:" >> "$REPORT_FILE"
+        echo "" >> "$REPORT_FILE"
+        
+        if [ -s "$MAVEN_ERRORS" ]; then
+            cat "$MAVEN_ERRORS" >> "$REPORT_FILE"
+        else
+            echo "No specific error details captured. Run 'mvn test' manually to see full errors." >> "$REPORT_FILE"
+        fi
+        
+        echo "" >> "$REPORT_FILE"
+        echo "---" >> "$REPORT_FILE"
+        echo "" >> "$REPORT_FILE"
+        echo "📋 All Test Methods (need implementation):" >> "$REPORT_FILE"
+        echo "" >> "$REPORT_FILE"
+        
+        # List all test methods
+        find "$TEST_DIR" -name "*Test.java" 2>/dev/null | sort | while read test_file; do
+            test_class=$(basename "$test_file" .java)
+            echo "❌ $test_class:" >> "$REPORT_FILE"
+            grep -A 1 "@Test" "$test_file" | grep "public void" | \
+                sed 's/.*public void /   - /' | \
+                sed 's/(.*$/()/' >> "$REPORT_FILE" 2>/dev/null || true
+            echo "" >> "$REPORT_FILE"
+        done
+    else
+        # Tests ran - show actual test failures
+        echo "📋 Test Execution Results:" >> "$REPORT_FILE"
+        echo "" >> "$REPORT_FILE"
+        
+        if [ -s "$TEST_RESULTS" ]; then
+            cat "$TEST_RESULTS" >> "$REPORT_FILE"
+        else
+            echo "All tests passed! 🎉" >> "$REPORT_FILE"
+        fi
+    fi
+    
+    echo '```' >> "$REPORT_FILE"
+else
+    cat >> "$REPORT_FILE" << 'EOF'
+✅ No failed tests - all backend tests are passing!
+EOF
+fi
+
+cat >> "$REPORT_FILE" << 'EOF'
+
 ### Missing Implementations (Sprint 2 Work)
 
 The following classes need to be implemented to make tests pass:
 
-- [ ] \`IronBucketS3Service.java\` - S3 operations via IronBucket
-- [ ] \`PolicyManagementService.java\` - Policy engine integration
-- [ ] \`AuditLogService.java\` - Audit logging and queries
-- [ ] \`S3BucketResolver.java\` - GraphQL S3 bucket queries
-- [ ] \`S3ObjectResolver.java\` - GraphQL S3 object queries
-- [ ] \`PolicyResolver.java\` - GraphQL policy queries
-- [ ] \`S3Bucket.java\` - Domain model
-- [ ] \`S3Object.java\` - Domain model
-- [ ] \`Policy.java\` - Domain model
-- [ ] \`AuditLogEntry.java\` - Domain model
+- [ ] `IronBucketS3Service.java` - S3 operations via IronBucket
+- [ ] `PolicyManagementService.java` - Policy engine integration
+- [ ] `AuditLogService.java` - Audit logging and queries
+- [ ] `S3BucketResolver.java` - GraphQL S3 bucket queries
+- [ ] `S3ObjectResolver.java` - GraphQL S3 object queries
+- [ ] `PolicyResolver.java` - GraphQL policy queries
+- [ ] `S3Bucket.java` - Domain model
+- [ ] `S3Object.java` - Domain model
+- [ ] `Policy.java` - Domain model
+- [ ] `AuditLogEntry.java` - Domain model
 
 ---
+EOF
+
+cat >> "$REPORT_FILE" << 'EOF'
 
 ## Frontend Tests (Next.js UI)
 
@@ -314,6 +390,9 @@ The following classes need to be implemented to make tests pass:
    - Save/Cancel actions
 
 ### Frontend Test Summary
+EOF
+
+cat >> "$REPORT_FILE" << EOF
 
 \`\`\`
 Tests Written: $FRONTEND_TESTS_WRITTEN (test cases in *.test.tsx files)
@@ -322,6 +401,40 @@ Tests Failing: $FRONTEND_FAILED (${FRONTEND_FAILED} components need Sprint 2 imp
 \`\`\`
 
 **Status:** $([ $FRONTEND_FAILED -eq 0 ] && echo "✅ ALL PASSING - Ready for production" || echo "🔴 FAILING - Needs Sprint 2 implementation")
+
+### Failed Frontend Tests Details
+
+EOF
+
+if [ $FRONTEND_FAILED -gt 0 ]; then
+    cat >> "$REPORT_FILE" << 'EOF'
+The following frontend tests are failing and need implementation:
+
+```
+EOF
+    
+    # List all test files and their test cases
+    find "$PROJECT_ROOT/ui" \( -name "*.test.tsx" -o -name "*.test.ts" \) 2>/dev/null | sort | while read test_file; do
+        if [ -f "$test_file" ]; then
+            test_name=$(basename "$test_file")
+            echo "❌ $test_name:" >> "$REPORT_FILE"
+            grep -E "(test\(|it\()" "$test_file" | \
+                sed "s/.*test('/   - /" | \
+                sed "s/.*it('/   - /" | \
+                sed "s/'.*$//" | \
+                head -50 >> "$REPORT_FILE" 2>/dev/null || true
+            echo "" >> "$REPORT_FILE"
+        fi
+    done
+    
+    echo '```' >> "$REPORT_FILE"
+else
+    cat >> "$REPORT_FILE" << 'EOF'
+✅ No failed tests - all frontend tests are passing!
+EOF
+fi
+
+cat >> "$REPORT_FILE" << 'EOF'
 
 ### Missing Implementations (Sprint 2 Work)
 
