@@ -1,0 +1,26 @@
+# Dockerfile for E2E Test Runner
+# Runs inside Docker network to avoid localhost/networking issues
+
+FROM alpine:3.19
+
+# Install required tools
+RUN apk add --no-cache \
+    bash \
+    curl \
+    jq \
+    coreutils \
+    grep \
+    sed
+
+# Set working directory
+WORKDIR /tests
+
+# Copy test script
+COPY test-e2e-internal.sh /tests/test-e2e.sh
+
+# Make script executable
+RUN chmod +x /tests/test-e2e.sh
+
+# Default command
+ENTRYPOINT ["/tests/test-e2e.sh"]
+CMD ["--alice-bob"]

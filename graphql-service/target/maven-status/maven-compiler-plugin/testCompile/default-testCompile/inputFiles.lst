@@ -2,3 +2,10 @@
 /workspaces/Graphite-Forge/graphql-service/src/test/java/com/example/graphql/ItemGraphqlIntegrationTest.java
 /workspaces/Graphite-Forge/graphql-service/src/test/java/com/example/graphql/ItemHierarchyTest.java
 /workspaces/Graphite-Forge/graphql-service/src/test/java/com/example/graphql/ItemServiceTest.java
+/workspaces/Graphite-Forge/graphql-service/src/test/java/com/example/graphql/ironbucket/AuditLogServiceTest.java
+/workspaces/Graphite-Forge/graphql-service/src/test/java/com/example/graphql/ironbucket/IronBucketIntegrationTest.java
+/workspaces/Graphite-Forge/graphql-service/src/test/java/com/example/graphql/ironbucket/IronBucketS3ServiceTest.java
+/workspaces/Graphite-Forge/graphql-service/src/test/java/com/example/graphql/ironbucket/PolicyManagementServiceTest.java
+/workspaces/Graphite-Forge/graphql-service/src/test/java/com/example/graphql/ironbucket/PolicyResolverTest.java
+/workspaces/Graphite-Forge/graphql-service/src/test/java/com/example/graphql/ironbucket/S3BucketResolverTest.java
+/workspaces/Graphite-Forge/graphql-service/src/test/java/com/example/graphql/ironbucket/S3ObjectResolverTest.java

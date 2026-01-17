@@ -2,26 +2,53 @@ version: "3.8"
 
 services:
 
-  # ... bestehende Services: rabbitmq, eureka-server, config-server, world-service, greeting-service
-
+  # Edge Gateway (Spring Cloud Gateway)
   edge-gateway:
     image: edge-gateway:native
-    depends_on:
-      - eureka-server
+    build:
+      context: ./edge-gateway
     environment:
-      - EUREKACLIENTSERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka
+      - SPRING_PROFILES_ACTIVE=default
     ports:
       - "8080:8080"
+    networks:
+      - graphite-forge-network
+      - steel-hammer_steel-hammer-network
 
+  # GraphQL Service
   graphql-service:
     image: graphql-service:native
-    depends_on:
-      - rabbitmq
-      - eureka-server
-      - config-server
+    build:
+      context: ./graphql-service
     environment:
-      - SPRINGCLOUDCONFIG_URI=http://config-server:8888
-      - EUREKACLIENTSERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka
-      - SPRINGCLOUDBUS_ENABLED=true
+      - SPRING_PROFILES_ACTIVE=default
     ports:
-      - "8083:8083"
+      - "8081:8081"
+    networks:
+      - graphite-forge-network
+      - steel-hammer_steel-hammer-network
+
+  # E2E Test Runner (runs in same network)
+  e2e-tests:
+    build:
+      context: ./scripts
+      dockerfile: Dockerfile.e2e
+    depends_on:
+      - graphql-service
+      - edge-gateway
+    environment:
+      - GATEWAY_URL=http://edge-gateway:8080
+      - GRAPHQL_URL=http://graphql-service:8081
+      - KEYCLOAK_URL=http://steel-hammer-keycloak:7081
+      - MINIO_URL=http://steel-hammer-minio:9000
+    networks:
+      - graphite-forge-network
+      - steel-hammer_steel-hammer-network
+    profiles:
+      - testing
+
+networks:
+  graphite-forge-network:
+    driver: bridge
+  steel-hammer_steel-hammer-network:
+    external: true
