@@ -1,0 +1,14 @@
+spring:
+  application:
+    name: graphql-service
+
+server:
+  port: 8083
+
+security:
+  oauth2:
+    resourceserver:
+      jwt:
+        # Docker/Kubernetes context: Use service-to-service DNS
+        issuer-uri: http://steel-hammer-keycloak:7081/realms/master
+        jwk-set-uri: http://steel-hammer-keycloak:7081/realms/master/protocol/openid-connect/certs

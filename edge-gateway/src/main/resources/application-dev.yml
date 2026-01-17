@@ -1,5 +1,5 @@
 server:
-  port: 8080
+  port: 8082
 
 spring:
   application:
@@ -8,18 +8,18 @@ spring:
     gateway:
       discovery:
         locator:
-          enabled: true
+          enabled: false
       routes:
         - id: world-route
-          uri: lb://world-service
+          uri: http://localhost:8084
           predicates:
             - Path=/world/**
         - id: greeting-route
-          uri: lb://greeting-service
+          uri: http://localhost:8085
           predicates:
             - Path=/greet/**
         - id: graphql-route
-          uri: lb://graphql-service
+          uri: http://localhost:8083
           predicates:
             - Path=/graphql/**
             - Method=POST
@@ -29,12 +29,11 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: ${KEYCLOAK_ISSUER_URI:http://localhost:8081/realms/myrealm}
+          issuer-uri: http://localhost:7081/realms/myrealm
 
 eureka:
   client:
-    service-url:
-      defaultZone: http://eureka-server:8761/eureka
+    enabled: false
 
 management:
   endpoints:

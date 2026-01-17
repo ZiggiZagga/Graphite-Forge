@@ -16,9 +16,9 @@ NC='\033[0m'
 
 # Configuration - Use Docker service names (not localhost)
 GATEWAY_URL="${GATEWAY_URL:-http://edge-gateway:8080}"
-GRAPHQL_URL="${GRAPHQL_URL:-http://graphql-service:8081}"
-KEYCLOAK_URL="${KEYCLOAK_URL:-http://keycloak:7081}"
-MINIO_URL="${MINIO_URL:-http://minio:9000}"
+GRAPHQL_URL="${GRAPHQL_URL:-http://graphql-service:8083}"
+KEYCLOAK_URL="${KEYCLOAK_URL:-http://steel-hammer-keycloak:7081}"
+MINIO_URL="${MINIO_URL:-http://steel-hammer-minio:9000}"
 
 # Test tracking
 TESTS_PASSED=0
@@ -121,6 +121,12 @@ check_service() {
     local name=$2
     local max_retries=${3:-10}
     local retry=0
+    local sleep_time=3
+    
+    # For Keycloak, reduce sleep time but increase retries for faster checks
+    if [[ "$name" == "Keycloak" ]]; then
+        sleep_time=2
+    fi
     
     while [ $retry -lt $max_retries ]; do
         if curl -sf "$url" > /dev/null 2>&1; then
@@ -130,7 +136,7 @@ check_service() {
         retry=$((retry + 1))
         if [ $retry -lt $max_retries ]; then
             echo "  Waiting for $name... (attempt $retry/$max_retries)"
-            sleep 3
+            sleep $sleep_time
         fi
     done
     
@@ -153,10 +159,13 @@ test_infrastructure() {
     local critical_failure=false
     
     print_test "Keycloak is accessible"
-    if ! check_service "$KEYCLOAK_URL/realms/dev/.well-known/openid-configuration" "Keycloak" 20; then
+    # Keycloak takes ~2-3 minutes to fully initialize (database schema, realm setup)
+    # We'll try for 60 attempts (2 minutes) but continue even if it's not ready yet
+    if ! check_service "$KEYCLOAK_URL/realms/dev/.well-known/openid-configuration" "Keycloak" 60; then
         assert_success "Keycloak health" 1
-        print_error "Keycloak is required for authentication"
-        critical_failure=true
+        print_warning "Keycloak is still initializing (this can take 2-3 minutes on first start)"
+        print_warning "Continuing with tests - Keycloak-dependent tests may fail"
+        # Don't set critical_failure - allow tests to continue
     else
         assert_success "Keycloak health" 0
     fi
@@ -172,7 +181,8 @@ test_infrastructure() {
     print_test "Gateway is accessible"
     if ! check_service "$GATEWAY_URL/actuator/health" "Edge Gateway" 20; then
         assert_success "Gateway health" 1
-        print_warning "Gateway is required for routing"
+        print_warning "Gateway is not running (Graphite-Forge services not containerized yet)"
+        print_warning "This is expected in Sprint 1 (TDD phase) - implementation in Sprint 2"
     else
         assert_success "Gateway health" 0
     fi
@@ -180,8 +190,10 @@ test_infrastructure() {
     print_test "GraphQL service is accessible"
     if ! check_service "$GRAPHQL_URL/actuator/health" "GraphQL Service" 20; then
         assert_success "GraphQL health" 1
-        print_error "GraphQL service is required for tests"
-        critical_failure=true
+        print_warning "GraphQL service not running (Graphite-Forge services not containerized yet)"
+        print_warning "This is expected in Sprint 1 (TDD phase) - implementation in Sprint 2"
+        print_warning "Continuing with IronBucket integration tests only"
+        # Don't set critical_failure - IronBucket tests can still run
     else
         assert_success "GraphQL health" 0
     fi

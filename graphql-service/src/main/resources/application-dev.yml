@@ -1,0 +1,51 @@
+server:
+  port: 8083
+
+spring:
+  application:
+    name: graphql-service
+  r2dbc:
+    url: r2dbc:h2:mem:///testdb;MODE=PostgreSQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+    pool:
+      initial-size: 10
+      max-size: 20
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+    schemas: PUBLIC
+  rabbitmq:
+    host: localhost
+    port: 5672
+  graphql:
+    graphiql:
+      enabled: true
+      path: /graphiql
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:7081/realms/myrealm
+
+eureka:
+  client:
+    enabled: false
+
+features:
+  crud:
+    create-enabled: true
+    read-enabled: true
+    update-enabled: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,env,refresh,bus-refresh

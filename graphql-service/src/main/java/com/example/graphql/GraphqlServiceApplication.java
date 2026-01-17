@@ -1,8 +1,8 @@
-
 package com.example.graphql;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.data.r2dbc.repository.config.EnableR2dbcRepositories;
 
 /**
  * Entry point for the GraphQL CRUD microservice.
@@ -11,6 +11,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  * for managing Item entities. Designed for extensibility and cloud-native deployment.</p>
  */
 @SpringBootApplication
+@EnableR2dbcRepositories
 public class GraphqlServiceApplication {
 
     /**

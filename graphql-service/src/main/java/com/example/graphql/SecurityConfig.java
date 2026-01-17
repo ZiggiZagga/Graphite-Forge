@@ -2,6 +2,7 @@ package com.example.graphql;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
 import org.springframework.security.web.server.SecurityWebFilterChain;
@@ -13,6 +14,8 @@ import static org.springframework.security.config.Customizer.withDefaults;
  * Reactive security configuration for graphql-service.
  * Secures /graphql endpoints and enables JWT validation via OAuth2 resource server (Keycloak).
  * Includes CORS configuration for browser-based clients.
+ * 
+ * For development (dev profile), security is disabled to allow testing without Keycloak.
  */
 @Configuration
 @EnableWebFluxSecurity
@@ -24,19 +27,37 @@ public class SecurityConfig {
         this.corsConfigurationSource = corsConfigurationSource;
     }
 
+    /**
+     * Production/Docker security configuration - requires JWT validation
+     */
     @Bean
+    @Profile("!dev")
     public SecurityWebFilterChain springSecurityFilterChain(ServerHttpSecurity http) {
         http
             .cors(cors -> cors.configurationSource(corsConfigurationSource))
             .csrf(csrf -> csrf.disable())  // Stateless GraphQL API - CSRF not needed
             .authorizeExchange(exchanges -> exchanges
-                .pathMatchers("/actuator/health/live", "/actuator/health/ready").permitAll()  // Kubernetes probes
+                .pathMatchers("/actuator/health", "/actuator/health/live", "/actuator/health/ready").permitAll()  // Health checks + Kubernetes probes
                 .pathMatchers("/actuator/**").authenticated()  // Protect other actuator endpoints
                 .pathMatchers("/graphql").authenticated()  // Protect GraphQL endpoint
                 .pathMatchers("/graphiql").permitAll()  // GraphQL IDE for development
                 .anyExchange().permitAll()
             )
             .oauth2ResourceServer(oauth2 -> oauth2.jwt(withDefaults()));
+
+        return http.build();
+    }
+
+    /**
+     * Development security configuration - permits all requests for local testing
+     */
+    @Bean
+    @Profile("dev")
+    public SecurityWebFilterChain springSecurityFilterChainDev(ServerHttpSecurity http) {
+        http
+            .cors(cors -> cors.configurationSource(corsConfigurationSource))
+            .csrf(csrf -> csrf.disable())
+            .authorizeExchange(exchanges -> exchanges.anyExchange().permitAll());
 
         return http.build();
     }
