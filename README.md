@@ -105,14 +105,22 @@ Graphite-Forge is your launchpad for modern, cloud-native microservices. It elim
 - Docker (for local orchestration)
 
 ### Running Locally
-1. **Build all services:**
+1. **Start everything with one command:**
 	 ```bash
-	 mvn clean install
+	 ./scripts/spinup.sh
 	 ```
-2. **Start with Docker Compose (with IronBucket integration):**
+	 The script will:
+	 - Check if IronBucket infrastructure is running
+	 - Offer to start IronBucket if needed (using its own startup script)
+	 - Start Graphite-Forge services (GraphQL API + UI)
+	 - Verify all services are healthy
+	 - Display all service URLs
+
+2. **(Optional) Rebuild before starting:**
 	 ```bash
-	 ./scripts/spinup.sh --ironbucket
+	 ./scripts/spinup.sh --rebuild
 	 ```
+
 3. **Access Services:**
 	 - GraphQL Playground: http://localhost:8083/graphiql
 	 - Next.js UI: http://localhost:3000
@@ -129,6 +137,8 @@ Graphite-Forge uses a **unified platform architecture** with IronBucket:
   - Keycloak Identity Provider (7081)
   - MinIO S3 Storage (9000)
   - Buzzle-Vane Service Registry (8083)
+
+**Smart Startup**: The `spinup.sh` script automatically detects if IronBucket is running. If not, it offers to start it using IronBucket's own startup scripts, ensuring proper lifecycle management.
 
 See [ARCHITECTURE.md](./ARCHITECTURE.md) for complete architecture documentation and [CONSOLIDATION_SUMMARY.md](./CONSOLIDATION_SUMMARY.md) for what changed.
 
