@@ -109,15 +109,40 @@ Graphite-Forge is your launchpad for modern, cloud-native microservices. It elim
 	 ```bash
 	 mvn clean install
 	 ```
-2. **Start with Docker Compose:**
+2. **Start with Docker Compose (with IronBucket integration):**
 	 ```bash
-	 docker-compose up --build
+	 ./scripts/spinup.sh --ironbucket
 	 ```
 3. **Access Services:**
-	 - Edge Gateway: http://localhost:8080
 	 - GraphQL Playground: http://localhost:8083/graphiql
-	 - H2 Console: http://localhost:8083/h2-console
-	 - Metrics: http://localhost:8083/actuator/prometheus
+	 - Next.js UI: http://localhost:3000
+	 - API Gateway (Sentinel-Gear): http://localhost:8080
+	 - Keycloak Admin: http://localhost:7081
+	 - MinIO Console: http://localhost:9001
+
+### Architecture
+
+Graphite-Forge uses a **unified platform architecture** with IronBucket:
+- **Graphite-Forge Services**: GraphQL API (8083) + Next.js UI (3000)
+- **Shared IronBucket Infrastructure**: 
+  - Sentinel-Gear API Gateway (8080)
+  - Keycloak Identity Provider (7081)
+  - MinIO S3 Storage (9000)
+  - Buzzle-Vane Service Registry (8083)
+
+See [ARCHITECTURE.md](./ARCHITECTURE.md) for complete architecture documentation and [CONSOLIDATION_SUMMARY.md](./CONSOLIDATION_SUMMARY.md) for what changed.
+
+### Running E2E Tests
+
+```bash
+./scripts/test-e2e.sh --in-container
+```
+
+This runs comprehensive tests including:
+- ✅ Keycloak authentication (alice/bob users)
+- ✅ GraphQL bucket operations
+- ✅ Multi-tenant data isolation
+- ✅ Service health checks
 
 ### Running Tests
 From the `graphql-service` directory:
@@ -129,11 +154,18 @@ mvn test
 
 ## Project Structure
 ```
-edge-gateway/           # API Gateway (Spring Cloud Gateway)
-graphql-service/        # GraphQL CRUD microservice (Java 25, Spring Boot 4 - 4.0.0-RC2 in this branch)
-ui/                     # Next.js + Tailwind + Apollo UI scaffold (see /ui/README.md)
-docker-compose.yml      # Local orchestration
-db/migrations/          # Flyway schema migrations
+graphql-service/        # GraphQL CRUD microservice (Java 25, Spring Boot 4)
+                        # Core API for bucket/object operations
+ui/                     # Next.js + Tailwind + Apollo UI 
+                        # Web interface for Graphite-Forge
+scripts/                # Startup and testing automation
+  ├── spinup.sh         # Unified startup (starts IronBucket + GF services)
+  ├── test-e2e.sh       # E2E test orchestration
+  └── setup-keycloak-dev-users.sh  # Keycloak user configuration
+IronBucket/             # Shared infrastructure (submodule reference)
+  └── steel-hammer/     # IronBucket stack definition
+docker-compose.yml      # Graphite-Forge service orchestration
+ARCHITECTURE.md         # Complete architecture documentation
 ```
 
 ---
