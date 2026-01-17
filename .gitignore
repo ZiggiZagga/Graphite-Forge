@@ -35,6 +35,12 @@ tmp/
 # Logs
 *.log
 
+# Test results and reports
+test-results/
+test-reports/
+*.test-report.*
+*-test-results.xml
+
 # Temporary files
 *.tmp
 *.temp
