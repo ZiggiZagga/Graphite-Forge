@@ -1,0 +1,23 @@
+{
+  "metadata": {
+    "timestamp": "2026-01-17T22:57:24Z",
+    "reportId": "test-report-20260117_225509",
+    "generator": "Comprehensive Test Reporting System"
+  },
+  "summary": {
+    "totalTests": 5,
+    "passed": 3,
+    "failed": 2,
+    "passRate": 60
+  },
+  "failures": {
+    "backend": 1,
+    "e2e": 0,
+    "roadmap": 1
+  },
+  "logs": {
+    "backend": "/workspaces/Graphite-Forge/test-results/logs/backend-20260117_225509.log",
+    "e2e": "/workspaces/Graphite-Forge/test-results/logs/e2e-20260117_225509.log",
+    "roadmap": "/workspaces/Graphite-Forge/test-results/logs/roadmap-20260117_225509.log"
+  }
+}

@@ -55,10 +55,16 @@ All services run in Docker containers on the same network for seamless service d
 # Start the full stack
 ./scripts/spinup.sh
 
-# Run E2E tests
-./scripts/test-e2e.sh
+# Run all tests with comprehensive reporting
+./scripts/comprehensive-test-reporter.sh --all
 
-# Run unit tests
+# Run specific test types
+./scripts/comprehensive-test-reporter.sh --backend  # Backend only
+./scripts/comprehensive-test-reporter.sh --e2e      # E2E only
+./scripts/comprehensive-test-reporter.sh --roadmap  # Roadmap only
+
+# Traditional test commands
+./scripts/test-e2e.sh
 cd graphql-service && mvn test
 cd ../ui && npm test
 ```
@@ -70,6 +76,35 @@ cd ../ui && npm test
 | [**ARCHITECTURE.md**](ARCHITECTURE.md) | System design, component interactions, data flow |
 | [**CONTRIBUTING.md**](CONTRIBUTING.md) | Development guidelines, coding standards, PR process |
 | [**ROADMAP.md**](ROADMAP.md) | Feature roadmap and community priorities |
+| [**TEST-REPORTING-README.md**](TEST-REPORTING-README.md) | Comprehensive test reporting & todo system |
+
+### Test Reporting System
+
+Automatic test execution with failure tracking and todo generation:
+
+```bash
+# Run all tests and generate reports
+./scripts/comprehensive-test-reporter.sh --all
+```
+
+**What you get:**
+- ✅ Single command runs all tests (Backend, E2E, Roadmap)
+- ✅ Automatic todo generation from failing tests
+- ✅ Severity-based prioritization (Critical, High, Medium, Low)
+- ✅ 4 report formats (Markdown, JSON, HTML, Summary)
+- ✅ CI/CD ready (GitHub Actions, GitLab CI, Jenkins)
+
+**Quick access:**
+- 📖 [Quick Reference Guide](docs/TEST-REPORTING-QUICK-REFERENCE.md) - Start here!
+- 📊 [Full Documentation](docs/TEST-REPORTING-SYSTEM.md) - Complete guide
+- 🔗 [CI/CD Integration](docs/CI-CD-INTEGRATION.md) - Pipeline setup
+- 📋 [Sample Reports](docs/SAMPLE-TEST-REPORT.md) - Example output
+
+Reports are generated in `test-results/reports/`:
+- `LATEST-SUMMARY.md` - Quick overview (60 seconds)
+- `test-report-*-todos.md` - Action items with deadlines
+- `test-report-*.md` - Full detailed report
+- `test-report-*.json` - Machine-readable format
 
 ## Key Features
 

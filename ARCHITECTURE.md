@@ -261,9 +261,85 @@ MINIO_URI=http://steel-hammer-minio:9000
 6. Restart service: `docker-compose restart graphql-service`
 
 ### Testing
+
+**Comprehensive Test Reporting System**
+
+All tests can be executed with a single command that provides automatic failure tracking and todo generation:
+
+```bash
+./scripts/comprehensive-test-reporter.sh --all
+```
+
+**Architecture:**
+```
+┌─────────────────────────────────────────────────────────────┐
+│         Comprehensive Test Reporter (Bash)                   │
+│  ┌─────────────────────────────────────────────────────────┐│
+│  │  Test Execution Layer                                   ││
+│  │  ┌─────────────┐  ┌─────────────┐  ┌─────────────────┐ ││
+│  │  │  Backend    │  │  E2E Tests  │  │ Roadmap Tests   │ ││
+│  │  │  (Maven)    │  │  (Shell)    │  │ (Jest+TS)       │ ││
+│  │  └──────┬──────┘  └──────┬──────┘  └────────┬────────┘ ││
+│  └─────────┼────────────────┼───────────────────┼──────────┘│
+│            │                │                   │            │
+│            └────────────────┼───────────────────┘            │
+│                             ▼                                │
+│  ┌─────────────────────────────────────────────────────────┐│
+│  │  Report Generation Layer                                ││
+│  │  ┌──────────────────────────────────────────────────┐  ││
+│  │  │  TestReporter (TypeScript)                       │  ││
+│  │  │  - Failure parsing & classification              │  ││
+│  │  │  - Severity detection (CRITICAL/HIGH/MED/LOW)   │  ││
+│  │  │  - Deadline calculation                          │  ││
+│  │  │  - Multi-format generation                       │  ││
+│  │  └──────────────────────────────────────────────────┘  ││
+│  └─────────────────────────────────────────────────────────┘│
+│                             │                                │
+│                             ▼                                │
+│  ┌─────────────────────────────────────────────────────────┐│
+│  │  Output: 4 Report Formats                              ││
+│  │  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐  ││
+│  │  │Markdown  │ │  JSON    │ │  HTML    │ │ Summary  │  ││
+│  │  │(detailed)│ │(machine) │ │(browser) │ │(quick)   │  ││
+│  │  └──────────┘ └──────────┘ └──────────┘ └──────────┘  ││
+│  └─────────────────────────────────────────────────────────┘│
+└─────────────────────────────────────────────────────────────┘
+```
+
+**Test Types:**
+- **Backend Tests**: Maven tests for config-server, graphql-service, edge-gateway
+- **E2E Tests**: Shell scripts validating end-to-end workflows
+- **Roadmap Tests**: Jest validation of feature completeness
+
+**Report Structure:**
+```
+test-results/
+├── reports/
+│   ├── LATEST-SUMMARY.md            # Quick overview (60 seconds)
+│   ├── test-report-YYYYMMDD.md      # Full detailed report
+│   ├── test-report-YYYYMMDD-todos.md # Action items with deadlines
+│   └── test-report-YYYYMMDD.json    # Machine-readable format
+└── logs/
+    ├── backend-YYYYMMDD.log         # Maven test output
+    ├── e2e-YYYYMMDD.log             # E2E test output
+    └── roadmap-YYYYMMDD.log         # Jest test output
+```
+
+**Severity Classification:**
+- **CRITICAL** (Same Day): Keywords: `auth`, `security`, `payment`, `database`, `api`
+- **HIGH** (1-2 Days): Keywords: `integration`, `timeout`, `connection`
+- **MEDIUM** (3 Days): Keywords: `unit`, `assertion`, `validation`
+- **LOW** (1 Week): Default for other failures
+
+**Traditional Testing Commands:**
 - **Unit Tests**: `cd graphql-service && mvn test`
 - **E2E Tests**: `./scripts/test-e2e.sh`
 - Tests run in Docker containers on same network as services
+
+**Documentation:**
+- 📖 [Quick Reference](docs/TEST-REPORTING-QUICK-REFERENCE.md) - Get started in 5 minutes
+- 📊 [Complete Guide](docs/TEST-REPORTING-SYSTEM.md) - Full documentation
+- 🔗 [CI/CD Integration](docs/CI-CD-INTEGRATION.md) - Pipeline setup
 
 ---
 

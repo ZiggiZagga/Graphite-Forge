@@ -29,6 +29,17 @@ bash scripts/setup-keycloak-dev-users.sh
 - Follow the coding standards below
 
 ### 4. Test Your Changes
+
+**Recommended: Use comprehensive test reporter**
+```bash
+# Run all tests with automatic reporting and todo generation
+./scripts/comprehensive-test-reporter.sh --all
+
+# Check results
+cat test-results/reports/LATEST-SUMMARY.md
+```
+
+**Traditional approach (if needed):**
 ```bash
 # Unit tests
 cd graphql-service && mvn test
@@ -37,6 +48,13 @@ cd ../ui && npm test
 # E2E tests
 ./scripts/test-e2e.sh
 ```
+
+💡 **The comprehensive reporter:**
+- Runs all tests automatically
+- Converts failures to structured todos
+- Assigns severity and deadlines
+- Generates 4 report formats
+- See [Quick Reference](docs/TEST-REPORTING-QUICK-REFERENCE.md) for details
 
 ### 5. Submit a Pull Request
 - Push to your fork
@@ -150,7 +168,45 @@ Closes #123
 
 ## Testing
 
-### Unit Tests (GraphQL Service)
+### Comprehensive Test Reporter (Recommended)
+
+```bash
+# Run all tests with automatic reporting
+./scripts/comprehensive-test-reporter.sh --all
+
+# Run specific test types
+./scripts/comprehensive-test-reporter.sh --backend    # Maven tests only
+./scripts/comprehensive-test-reporter.sh --e2e        # E2E tests only
+./scripts/comprehensive-test-reporter.sh --roadmap    # Roadmap validation only
+
+# Verbose output for debugging
+./scripts/comprehensive-test-reporter.sh --all --verbose
+```
+
+**What you get:**
+- ✅ All tests executed in correct order
+- ✅ Failures converted to structured todos
+- ✅ Severity-based prioritization (Critical/High/Medium/Low)
+- ✅ Auto-assigned deadlines based on severity
+- ✅ 4 report formats: Markdown, JSON, HTML, Summary
+
+**View results:**
+```bash
+# Quick overview
+cat test-results/reports/LATEST-SUMMARY.md
+
+# Todo list with priorities
+cat test-results/reports/*-todos.md
+
+# Full detailed report
+cat test-results/reports/test-report-*.md
+```
+
+📖 **Learn more:** [Test Reporting System Docs](docs/TEST-REPORTING-SYSTEM.md)
+
+### Traditional Testing (Individual Commands)
+
+#### Unit Tests (GraphQL Service)
 ```bash
 cd graphql-service
 mvn test
@@ -162,7 +218,7 @@ mvn test -Dtest=BucketServiceTest
 mvn clean test jacoco:report
 ```
 
-### E2E Tests
+#### E2E Tests
 ```bash
 # Run all E2E tests in container
 ./scripts/test-e2e.sh
@@ -176,10 +232,31 @@ mvn clean test jacoco:report
 - Bug fixes: Add tests that reproduce the bug
 - Refactoring: Maintain existing test coverage
 
+### Todo-Driven Development
+
+When tests fail, the comprehensive reporter generates todos:
+
+```markdown
+## 🔴 CRITICAL - Due: Same Day
+- **Module:** graphql-service
+- **Test:** PolicyManagementServiceTest
+- **Issue:** WebClient Builder is null
+- **Action:** Fix dependency injection for WebClient
+```
+
+**Workflow:**
+1. Run tests: `./scripts/comprehensive-test-reporter.sh --all`
+2. Review todos: `cat test-results/reports/*-todos.md`
+3. Fix issues starting with CRITICAL priority
+4. Re-run tests to verify fixes
+5. Todos automatically disappear when tests pass
+
 ## Pull Request Process
 
 ### Before Submitting
-- [ ] Tests pass locally
+- [ ] Tests pass: `./scripts/comprehensive-test-reporter.sh --all`
+- [ ] All CRITICAL and HIGH priority todos resolved
+- [ ] Check test results: `cat test-results/reports/LATEST-SUMMARY.md`
 - [ ] Code follows style guidelines
 - [ ] Added/updated tests as needed
 - [ ] Updated documentation if needed
