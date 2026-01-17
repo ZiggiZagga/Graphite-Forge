@@ -68,9 +68,16 @@ while [[ $# -gt 0 ]]; do
             echo "  --alice-bob        Run Alice & Bob multi-tenant test"
             echo "  --full-suite       Run complete test suite"
             echo "  --skip-setup       Skip service health checks"
-            echo "  --clean-start      Stop all services, clean up, and start fresh"
-            echo "  --in-container     Run tests in Docker container (avoids network issues)"
+            echo "  --in-container     Run tests in Docker container (recommended)"
             echo "  -h, --help         Show this help message"
+            echo ""
+            echo "Prerequisites:"
+            echo "  IronBucket infrastructure must be running!"
+            echo "  Start it: cd IronBucket/steel-hammer && docker-compose -f docker-compose-steel-hammer.yml up -d"
+            echo ""
+            echo "  Graphite-Forge services must be running!"
+            echo "  Start them: ./scripts/spinup.sh"
+            echo ""
             exit 0
             ;;
         *)
@@ -377,43 +384,9 @@ main() {
     print_header "     Graphite-Forge + IronBucket - E2E Test Suite                 "
     echo ""
     
-    # Handle clean start
-    if [ "$CLEAN_START" = true ]; then
-        print_section "Clean Start: Stopping and Cleaning Services"
-        
-        print_info "Stopping IronBucket services..."
-        cd "$STEEL_HAMMER_DIR" || {
-            print_error "Steel Hammer directory not found: $STEEL_HAMMER_DIR"
-            exit 1
-        }
-        docker-compose -f docker-compose-steel-hammer.yml down -v || print_warning "Failed to stop some services"
-        
-        print_info "Cleaning up Docker resources..."
-        cd "$PROJECT_ROOT"
-        docker system prune -f > /dev/null 2>&1 || true
-        
-        print_info "Removing test containers..."
-        docker rm -f graphite-forge-e2e steel-hammer-test 2>/dev/null || true
-        
-        print_success "Cleanup complete"
-        echo ""
-        
-        print_section "Starting Services Fresh"
-        
-        print_info "Starting IronBucket services..."
-        cd "$STEEL_HAMMER_DIR"
-        docker-compose -f docker-compose-steel-hammer.yml up -d || {
-            print_error "Failed to start IronBucket services"
-            exit 1
-        }
-        
-        print_info "Waiting for services to be ready (60 seconds)..."
-        sleep 60
-        
-        cd "$PROJECT_ROOT"
-        print_success "Services started"
-        echo ""
-    fi
+    # Note: IronBucket must be running separately - E2E tests do not manage its lifecycle
+    print_info "E2E tests expect IronBucket infrastructure to be running independently"
+    echo ""
     
     # Check if should run in container
     if [ "$RUN_IN_CONTAINER" = true ]; then
