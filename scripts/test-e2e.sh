@@ -17,6 +17,7 @@ NC='\033[0m'
 # Configuration
 PROJECT_ROOT="/workspaces/Graphite-Forge"
 IRONBUCKET_DIR="/workspaces/Graphite-Forge/IronBucket"
+STEEL_HAMMER_DIR="/workspaces/Graphite-Forge/IronBucket/steel-hammer"
 LOG_FILE="$PROJECT_ROOT/e2e-test-$(date +%Y%m%d-%H%M%S).log"
 
 # Test URLs
@@ -34,8 +35,7 @@ TESTS_TOTAL=0
 RUN_ALICE_BOB_TEST=false
 RUN_FULL_SUITE=false
 SKIP_SETUP=false
-
-# Flags
+CLEAN_START=false
 RUN_IN_CONTAINER=false
 
 # Parse arguments
@@ -53,6 +53,10 @@ while [[ $# -gt 0 ]]; do
             SKIP_SETUP=true
             shift
             ;;
+        --clean-start)
+            CLEAN_START=true
+            shift
+            ;;
         --in-container)
             RUN_IN_CONTAINER=true
             shift
@@ -64,6 +68,7 @@ while [[ $# -gt 0 ]]; do
             echo "  --alice-bob        Run Alice & Bob multi-tenant test"
             echo "  --full-suite       Run complete test suite"
             echo "  --skip-setup       Skip service health checks"
+            echo "  --clean-start      Stop all services, clean up, and start fresh"
             echo "  --in-container     Run tests in Docker container (avoids network issues)"
             echo "  -h, --help         Show this help message"
             exit 0
@@ -371,6 +376,44 @@ test_full_graphql_api() {
 main() {
     print_header "     Graphite-Forge + IronBucket - E2E Test Suite                 "
     echo ""
+    
+    # Handle clean start
+    if [ "$CLEAN_START" = true ]; then
+        print_section "Clean Start: Stopping and Cleaning Services"
+        
+        print_info "Stopping IronBucket services..."
+        cd "$STEEL_HAMMER_DIR" || {
+            print_error "Steel Hammer directory not found: $STEEL_HAMMER_DIR"
+            exit 1
+        }
+        docker-compose -f docker-compose-steel-hammer.yml down -v || print_warning "Failed to stop some services"
+        
+        print_info "Cleaning up Docker resources..."
+        cd "$PROJECT_ROOT"
+        docker system prune -f > /dev/null 2>&1 || true
+        
+        print_info "Removing test containers..."
+        docker rm -f graphite-forge-e2e steel-hammer-test 2>/dev/null || true
+        
+        print_success "Cleanup complete"
+        echo ""
+        
+        print_section "Starting Services Fresh"
+        
+        print_info "Starting IronBucket services..."
+        cd "$STEEL_HAMMER_DIR"
+        docker-compose -f docker-compose-steel-hammer.yml up -d || {
+            print_error "Failed to start IronBucket services"
+            exit 1
+        }
+        
+        print_info "Waiting for services to be ready (60 seconds)..."
+        sleep 60
+        
+        cd "$PROJECT_ROOT"
+        print_success "Services started"
+        echo ""
+    fi
     
     # Check if should run in container
     if [ "$RUN_IN_CONTAINER" = true ]; then

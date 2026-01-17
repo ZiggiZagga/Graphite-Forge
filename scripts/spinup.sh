@@ -36,6 +36,7 @@ SENTINEL_GEAR_URL="http://localhost:8084"
 
 # Flags
 START_IRONBUCKET=false
+WITH_IRONBUCKET=false
 REBUILD_SERVICES=false
 DEBUG_MODE=false
 SHOW_LOGS=false
@@ -44,6 +45,11 @@ SHOW_LOGS=false
 while [[ $# -gt 0 ]]; do
     case $1 in
         --ironbucket)
+            START_IRONBUCKET=true
+            shift
+            ;;
+        --with-ironbucket)
+            WITH_IRONBUCKET=true
             START_IRONBUCKET=true
             shift
             ;;
@@ -63,11 +69,12 @@ while [[ $# -gt 0 ]]; do
             echo "Usage: ./spinup.sh [OPTIONS]"
             echo ""
             echo "Options:"
-            echo "  --ironbucket    Start IronBucket services (Keycloak, MinIO, etc.)"
-            echo "  --rebuild       Rebuild all services before starting"
-            echo "  --debug         Enable debug logging"
-            echo "  --logs          Show service logs after startup"
-            echo "  -h, --help      Show this help message"
+            echo "  --ironbucket         Start IronBucket services (Keycloak, MinIO, etc.)"
+            echo "  --with-ironbucket    Start Graphite-Forge services in IronBucket network"
+            echo "  --rebuild            Rebuild all services before starting"
+            echo "  --debug              Enable debug logging"
+            echo "  --logs               Show service logs after startup"
+            echo "  -h, --help           Show this help message"
             exit 0
             ;;
         *)
@@ -291,6 +298,54 @@ main() {
     fi
     
     print_info "Starting services via docker-compose..."
+    
+    # If --with-ironbucket, ensure services use IronBucket network
+    if [ "$WITH_IRONBUCKET" = true ]; then
+        print_info "Connecting Graphite-Forge services to IronBucket network..."
+        
+        # Check if IronBucket network exists
+        IRONBUCKET_NETWORK="steel-hammer_steel-hammer-network"
+        if ! docker network inspect "$IRONBUCKET_NETWORK" > /dev/null 2>&1; then
+            print_error "IronBucket network not found: $IRONBUCKET_NETWORK"
+            print_info "Start IronBucket services first: ./spinup.sh --ironbucket"
+            exit 1
+        fi
+        
+        print_success "Found IronBucket network: $IRONBUCKET_NETWORK"
+        
+        # Export network name for docker-compose
+        export IRONBUCKET_NETWORK="$IRONBUCKET_NETWORK"
+        
+        # Create custom docker-compose override for network
+        cat > "$PROJECT_ROOT/docker-compose.override.yml" <<EOF
+version: '3.8'
+
+services:
+  config-server:
+    networks:
+      - ironbucket-network
+  
+  edge-gateway:
+    networks:
+      - ironbucket-network
+  
+  graphql-service:
+    networks:
+      - ironbucket-network
+    environment:
+      - KEYCLOAK_URL=http://steel-hammer-keycloak:7081
+      - MINIO_URL=http://steel-hammer-minio:9000
+      - EUREKA_URL=http://steel-hammer-buzzle-vane:8083/eureka
+
+networks:
+  ironbucket-network:
+    external: true
+    name: steel-hammer_steel-hammer-network
+EOF
+        
+        print_success "Created docker-compose.override.yml for IronBucket network"
+    fi
+    
     if docker-compose up -d 2>&1 | tee -a "$LOG_FILE"; then
         print_success "Docker Compose services started"
     else
