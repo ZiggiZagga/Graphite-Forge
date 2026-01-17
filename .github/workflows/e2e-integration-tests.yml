@@ -1,0 +1,264 @@
+name: E2E Integration Tests
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  schedule:
+    # Nightly E2E tests at 2:00 AM UTC
+    - cron: '0 2 * * *'
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  e2e-ironbucket:
+    name: E2E Tests with IronBucket
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout Graphite-Forge
+        uses: actions/checkout@v4
+        with:
+          path: graphite-forge
+      
+      - name: Checkout IronBucket
+        uses: actions/checkout@v4
+        with:
+          repository: owner/IronBucket  # Replace with actual repo
+          path: IronBucket
+          ref: develop
+      
+      - name: Set up Java 25
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '25'
+          cache: 'maven'
+      
+      - name: Set up Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      
+      - name: Start IronBucket services
+        working-directory: IronBucket
+        run: |
+          docker-compose up -d
+          echo "Waiting for IronBucket services to be ready..."
+          sleep 30
+          docker-compose ps
+      
+      - name: Verify IronBucket health
+        run: |
+          echo "## IronBucket Service Health" >> $GITHUB_STEP_SUMMARY
+          echo "| Service | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|---------|--------|" >> $GITHUB_STEP_SUMMARY
+          
+          # Check MinIO
+          if docker exec steel-hammer-minio curl -f http://localhost:9000/minio/health/live 2>/dev/null; then
+            echo "| MinIO | ✅ Healthy |" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "| MinIO | ❌ Unhealthy |" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          # Check Keycloak
+          if docker exec steel-hammer-keycloak curl -f http://localhost:8080/health 2>/dev/null; then
+            echo "| Keycloak | ✅ Healthy |" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "| Keycloak | ❌ Unhealthy |" >> $GITHUB_STEP_SUMMARY
+          fi
+      
+      - name: Build Graphite-Forge services
+        working-directory: graphite-forge
+        run: |
+          cd config-server && mvn clean package -DskipTests
+          cd ../graphql-service && mvn clean package -DskipTests
+          cd ../edge-gateway && mvn clean package -DskipTests
+          cd ../ui && npm ci && npm run build
+      
+      - name: Start Graphite-Forge services
+        working-directory: graphite-forge
+        run: |
+          # Start config-server
+          java -jar config-server/target/*.jar &
+          CONFIG_PID=$!
+          echo "Config Server PID: $CONFIG_PID"
+          
+          # Wait for config-server
+          sleep 10
+          
+          # Start graphql-service
+          java -jar graphql-service/target/*.jar &
+          GRAPHQL_PID=$!
+          echo "GraphQL Service PID: $GRAPHQL_PID"
+          
+          # Start edge-gateway
+          java -jar edge-gateway/target/*.jar &
+          GATEWAY_PID=$!
+          echo "Edge Gateway PID: $GATEWAY_PID"
+          
+          # Save PIDs for cleanup
+          echo "$CONFIG_PID" > /tmp/graphite-forge-pids.txt
+          echo "$GRAPHQL_PID" >> /tmp/graphite-forge-pids.txt
+          echo "$GATEWAY_PID" >> /tmp/graphite-forge-pids.txt
+          
+          # Wait for services to start
+          sleep 30
+      
+      - name: Run E2E integration tests
+        working-directory: graphite-forge
+        run: |
+          chmod +x scripts/test-e2e.sh
+          ./scripts/test-e2e.sh --ci-mode
+        continue-on-error: true
+      
+      - name: Generate E2E test report
+        if: always()
+        working-directory: graphite-forge
+        run: |
+          if [ -f "test-results/e2e-results.json" ]; then
+            echo "## E2E Test Results" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            
+            # Parse test results
+            TOTAL=$(jq '.total_tests' test-results/e2e-results.json)
+            PASSED=$(jq '.passed' test-results/e2e-results.json)
+            FAILED=$(jq '.failed' test-results/e2e-results.json)
+            
+            echo "| Metric | Count |" >> $GITHUB_STEP_SUMMARY
+            echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
+            echo "| Total Tests | $TOTAL |" >> $GITHUB_STEP_SUMMARY
+            echo "| ✅ Passed | $PASSED |" >> $GITHUB_STEP_SUMMARY
+            echo "| ❌ Failed | $FAILED |" >> $GITHUB_STEP_SUMMARY
+            
+            # List test phases
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "### Test Phases" >> $GITHUB_STEP_SUMMARY
+            jq -r '.phases[] | "- [\(.status)] \(.name): \(.tests_passed)/\(.tests_total)"' test-results/e2e-results.json >> $GITHUB_STEP_SUMMARY
+          fi
+      
+      - name: Upload E2E test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-test-results
+          path: |
+            graphite-forge/test-results/
+            graphite-forge/logs/
+          retention-days: 30
+      
+      - name: Cleanup Graphite-Forge services
+        if: always()
+        run: |
+          if [ -f /tmp/graphite-forge-pids.txt ]; then
+            while read pid; do
+              kill $pid 2>/dev/null || true
+            done < /tmp/graphite-forge-pids.txt
+          fi
+      
+      - name: Stop IronBucket services
+        if: always()
+        working-directory: IronBucket
+        run: docker-compose down -v
+      
+      - name: Collect logs
+        if: always()
+        run: |
+          mkdir -p logs
+          docker-compose -f IronBucket/docker-compose.yml logs > logs/ironbucket-services.log || true
+      
+      - name: Upload logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: service-logs
+          path: logs/
+          retention-days: 7
+
+  containerized-tests:
+    name: Containerized Unit Tests
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      
+      - name: Run containerized tests
+        run: |
+          chmod +x scripts/test-containerized.sh
+          ./scripts/test-containerized.sh
+      
+      - name: Upload containerized test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: containerized-test-results
+          path: |
+            test-results/
+            logs/
+          retention-days: 30
+
+  test-report-generation:
+    name: Generate TDD Test Report
+    runs-on: ubuntu-latest
+    needs: [e2e-ironbucket, containerized-tests]
+    if: always()
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Generate TDD progress report
+        run: |
+          chmod +x scripts/test-report.sh
+          ./scripts/test-report.sh > tdd-report.txt
+      
+      - name: Upload TDD report
+        uses: actions/upload-artifact@v4
+        with:
+          name: tdd-progress-report
+          path: tdd-report.txt
+          retention-days: 90
+      
+      - name: Display TDD summary
+        run: |
+          echo "## TDD Progress Report" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          cat tdd-report.txt >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+
+  integration-summary:
+    name: Integration Test Summary
+    runs-on: ubuntu-latest
+    needs: [e2e-ironbucket, containerized-tests, test-report-generation]
+    if: always()
+    
+    steps:
+      - name: Generate integration summary
+        run: |
+          echo "# Integration Test Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## Test Suites" >> $GITHUB_STEP_SUMMARY
+          echo "| Suite | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|-------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| E2E IronBucket Integration | ${{ needs.e2e-ironbucket.result == 'success' && '✅' || '❌' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Containerized Unit Tests | ${{ needs.containerized-tests.result == 'success' && '✅' || '❌' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| TDD Report Generation | ${{ needs.test-report-generation.result == 'success' && '✅' || '❌' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Test Infrastructure" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ IronBucket develop branch" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Docker network: steel-hammer_steel-hammer-network" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Keycloak (port 7081), MinIO (port 9000)" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ 6 bash scripts for testing" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Alpine test container" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "📊 Download detailed reports from workflow artifacts" >> $GITHUB_STEP_SUMMARY

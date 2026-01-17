@@ -3,6 +3,12 @@
 
 **Version 2.0** - Now with Java 25 & Spring Boot 4! 🚀
 
+[![Build and Test](https://github.com/YOUR_ORG/Graphite-Forge/actions/workflows/ci.yml/badge.svg)](https://github.com/YOUR_ORG/Graphite-Forge/actions/workflows/ci.yml)
+[![Security Scan](https://github.com/YOUR_ORG/Graphite-Forge/actions/workflows/security-scan.yml/badge.svg)](https://github.com/YOUR_ORG/Graphite-Forge/actions/workflows/security-scan.yml)
+[![Docker Build](https://github.com/YOUR_ORG/Graphite-Forge/actions/workflows/docker-build.yml/badge.svg)](https://github.com/YOUR_ORG/Graphite-Forge/actions/workflows/docker-build.yml)
+[![E2E Integration](https://github.com/YOUR_ORG/Graphite-Forge/actions/workflows/e2e-integration-tests.yml/badge.svg)](https://github.com/YOUR_ORG/Graphite-Forge/actions/workflows/e2e-integration-tests.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 ## Why Graphite-Forge?
 
 **Are you tired of monolithic backends, slow feature delivery, and integration headaches?**
