@@ -7,14 +7,43 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ## [Unreleased]
 
 ### Added
-- User management dashboard (in progress)
-- Bucket-level policies and access control (in progress)
+- User management dashboard (planned for v2.1)
+- Bucket-level policies and access control (planned for v2.1)
 
 ### Changed
-- Documentation restructured for clarity
+- (No unreleased changes)
 
 ### Fixed
-- TBD
+- (No unreleased fixes)
+
+## [2.0.1] - January 17, 2026
+
+### Added
+- **Comprehensive Community Roadmap** - Transparent 6-month feature roadmap, contributor tiers, and voting mechanism
+- **Intelligent IronBucket Startup Detection** - Automatic detection of IronBucket services with interactive prompts for user convenience
+- **Enhanced Error Logging** - Comprehensive error diagnostics when services fail to start
+
+### Changed
+- **Documentation Consolidation** - Restructured from 30+ redundant files to 5 focused documents:
+  - README.md - Quick start and high-level overview
+  - ARCHITECTURE.md - Complete system design and technical deep-dive
+  - CONTRIBUTING.md - Developer guidelines and contribution process
+  - ROADMAP.md - Feature roadmap with community priorities
+  - COMMUNITY_ROADMAP.md - Community engagement strategy and contributor recognition
+- **spinup.sh Script** - Enhanced with IronBucket detection, improved error handling, and better user experience
+- **Startup Process** - Now intelligently detects IronBucket and offers interactive startup options
+
+### Fixed
+- Improved error messages when services fail to start
+- Better diagnostics for Docker container issues
+
+### Removed
+- Removed 30+ redundant documentation files (eliminated documentation debt)
+- Cleaned up duplicate documentation that caused confusion
+
+### Statistics
+- 48 files changed, 1,370 insertions(+), 12,991 deletions(-)
+- Net reduction of -11,621 lines through aggressive documentation consolidation
 
 ## [2.0.0] - January 17, 2026
 
