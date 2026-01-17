@@ -78,3 +78,6 @@ coverage/
 
 # Generated sources
 **/generated-sources/
+
+# IronBucket repository (reference only, not part of Graphite-Forge)
+IronBucket/
