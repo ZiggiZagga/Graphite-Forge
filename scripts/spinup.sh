@@ -70,6 +70,7 @@ while [[ $# -gt 0 ]]; do
             echo ""
             echo "Options:"
             echo "  --ironbucket         Start IronBucket services (Keycloak, MinIO, etc.)"
+            echo "                       + automatically setup alice/bob users for E2E"
             echo "  --with-ironbucket    Start Graphite-Forge services in IronBucket network"
             echo "  --rebuild            Rebuild all services before starting"
             echo "  --debug              Enable debug logging"
@@ -254,6 +255,18 @@ main() {
         
         # Wait for MinIO
         wait_for_service "$MINIO_URL/minio/health/live" "MinIO" 60
+        
+        # Step 3b: Set up Keycloak dev users (alice/bob) for E2E testing
+        print_step "3b" "Configure Keycloak Development Users"
+        cd "$PROJECT_ROOT"
+        
+        print_info "Setting up alice/bob users for direct grant flows..."
+        if bash "$PROJECT_ROOT/scripts/setup-keycloak-dev-users.sh"; then
+            print_success "Keycloak users configured (alice/bob ready)"
+        else
+            print_error "Keycloak user setup failed - E2E tests may fail"
+            exit 1
+        fi
         
         echo ""
     else

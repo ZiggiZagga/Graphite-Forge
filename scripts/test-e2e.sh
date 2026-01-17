@@ -459,6 +459,15 @@ main() {
             print_success "Found network: $network_name"
         fi
         
+        # Ensure Keycloak users are fully set up for direct grant (alice/bob)
+        print_section "Keycloak User Setup"
+        print_info "Ensuring Keycloak dev users are initialized..."
+        
+        if ! bash "$PROJECT_ROOT/scripts/setup-keycloak-dev-users.sh"; then
+            print_warning "Keycloak user setup failed - continuing may cause auth failures"
+        fi
+        
+        echo ""
         # Build E2E test image
         print_info "Building E2E test container..."
         docker build -f scripts/Dockerfile.e2e -t graphite-forge-e2e:latest scripts/ || {
@@ -483,7 +492,7 @@ main() {
         docker run --rm \
             --network "$network_name" \
             -e GATEWAY_URL=http://edge-gateway:8080 \
-            -e GRAPHQL_URL=http://graphql-service:8081 \
+            -e GRAPHQL_URL=http://graphql-service:8083 \
             -e KEYCLOAK_URL=http://steel-hammer-keycloak:7081 \
             -e MINIO_URL=http://steel-hammer-minio:9000 \
             graphite-forge-e2e:latest $test_args
