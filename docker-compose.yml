@@ -1,34 +1,16 @@
 version: "3.8"
 
+# Consolidated Architecture:
+# - Uses IronBucket (steel-hammer) for shared infrastructure:
+#   * Keycloak (identity & auth)
+#   * Sentinel-Gear (API gateway at localhost:8080, 8081)
+#   * Buzzle-Vane (Eureka service registry)
+#   * MinIO (S3-compatible object storage)
+# - Graphite-Forge provides only GraphQL service and UI
+
 services:
 
-  # Edge Gateway (Spring Cloud Gateway)
-  edge-gateway:
-    hostname: edge-gateway
-    container_name: edge-gateway
-    build:
-      context: ./edge-gateway
-      dockerfile: Dockerfile
-    environment:
-      - SPRING_PROFILES_ACTIVE=docker
-      - SPRING_APPLICATION_NAME=edge-gateway
-      - SPRING_CLOUD_CONFIG_ENABLED=false
-      - KEYCLOAK_URL=http://steel-hammer-keycloak:7081
-      - SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI=http://steel-hammer-keycloak:7081/realms/master
-      - EUREKA_URI=http://steel-hammer-buzzle-vane:8083/eureka
-      - MANAGEMENT_OTLP_TRACING_ENDPOINT=http://localhost:4317
-      - MANAGEMENT_METRICS_TAGS_ENVIRONMENT=docker
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
-      interval: 10s
-      timeout: 5s
-      retries: 3
-    networks:
-      - graphite-forge-network
-      - steel-hammer-network
-    restart: "always"
-
-  # GraphQL Service
+  # GraphQL Service (Core Graphite-Forge service)
   graphql-service:
     hostname: graphql-service
     container_name: graphql-service
@@ -65,9 +47,9 @@ services:
       dockerfile: Dockerfile.e2e
     depends_on:
       - graphql-service
-      - edge-gateway
     environment:
-      - GATEWAY_URL=http://edge-gateway:8080
+      # Gateway now provided by IronBucket (Sentinel-Gear)
+      - GATEWAY_URL=http://steel-hammer-sentinel-gear:8080
       - GRAPHQL_URL=http://graphql-service:8083
       - KEYCLOAK_URL=http://steel-hammer-keycloak:7081
       - MINIO_URL=http://steel-hammer-minio:9000

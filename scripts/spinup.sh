@@ -21,18 +21,15 @@ STEEL_HAMMER_DIR="$IRONBUCKET_DIR/steel-hammer"
 LOG_FILE="$PROJECT_ROOT/spinup-$(date +%Y%m%d-%H%M%S).log"
 TIMESTAMP=$(date '+%Y-%m-%d %H:%M:%S')
 
-# Service URLs
-CONFIG_SERVER_URL="http://localhost:8888"
-GATEWAY_URL="http://localhost:8080"
-GRAPHQL_URL="http://localhost:8081"
+# Service URLs - Graphite-Forge services
+GRAPHQL_URL="http://localhost:8083"
 UI_URL="http://localhost:3000"
 
-# IronBucket service URLs
-KEYCLOAK_URL="http://localhost:7081"
-MINIO_URL="http://localhost:9000"
-BRAZZ_NOSSEL_URL="http://localhost:8082"
-CLAIMSPINDEL_URL="http://localhost:8083"
-SENTINEL_GEAR_URL="http://localhost:8084"
+# Shared IronBucket service URLs (Gateway, Auth, Storage, Registry)
+GATEWAY_URL="http://localhost:8080"           # Sentinel-Gear (IronBucket gateway)
+KEYCLOAK_URL="http://localhost:7081"          # Identity & Auth
+MINIO_URL="http://localhost:9000"             # S3 Object Storage
+EUREKA_URL="http://localhost:8083/eureka"     # Service Registry
 
 # Flags
 START_IRONBUCKET=false
@@ -69,9 +66,9 @@ while [[ $# -gt 0 ]]; do
             echo "Usage: ./spinup.sh [OPTIONS]"
             echo ""
             echo "Options:"
-            echo "  --ironbucket         Start IronBucket services (Keycloak, MinIO, etc.)"
+            echo "  --ironbucket         Start IronBucket infrastructure (Keycloak, MinIO, Gateway, etc.)"
             echo "                       + automatically setup alice/bob users for E2E"
-            echo "  --with-ironbucket    Start Graphite-Forge services in IronBucket network"
+            echo "  --with-ironbucket    Start Graphite-Forge services with IronBucket integration"
             echo "  --rebuild            Rebuild all services before starting"
             echo "  --debug              Enable debug logging"
             echo "  --logs               Show service logs after startup"
@@ -269,28 +266,10 @@ main() {
         fi
         
         echo ""
-    else
-        print_step "3" "Skip IronBucket Services (--ironbucket not specified)"
-    fi
-
-    # Step 4: Build Graphite-Forge backend services
-    print_step "4" "Build Graphite-Forge Backend Services"
-    
-    cd "$PROJECT_ROOT"
-    
-    if [ "$REBUILD_SERVICES" = true ]; then
-        print_info "Building all services (this may take 2-5 minutes)..."
-        mvn clean install -DskipTests
-        print_success "All services built successfully"
-    else
-        print_info "Skipping build (use --rebuild to force rebuild)"
-        print_success "Using existing builds"
-    fi
-    
     echo ""
 
-    # Step 5: Start Graphite-Forge services with Docker Compose
-    print_step "5" "Start Graphite-Forge Services"
+    # Step 4: Start Graphite-Forge services via Docker Compose
+    print_step "4" "Start Graphite-Forge Services (GraphQL + UI)"
     
     cd "$PROJECT_ROOT"
     
@@ -369,22 +348,10 @@ EOF
     
     echo ""
 
-    # Step 6: Wait for services to be ready
-    print_step "6" "Wait for Services to Initialize"
+    # Step 5: Wait for Graphite-Forge services to be ready
+    print_step "5" "Wait for Services to Initialize"
     
-    # Config Server (first - others depend on it)
-    if ! wait_for_service "$CONFIG_SERVER_URL/actuator/health" "Config Server" 120; then
-        print_warning "Config Server failed to start - other services may not work"
-        print_info "Check logs: docker-compose logs config-server"
-    fi
-    
-    # Gateway
-    if ! wait_for_service "$GATEWAY_URL/actuator/health" "Edge Gateway" 120; then
-        print_warning "Edge Gateway failed to start"
-        print_info "Check logs: docker-compose logs edge-gateway"
-    fi
-    
-    # GraphQL Service
+    # GraphQL Service (primary Graphite-Forge service)
     if ! wait_for_service "$GRAPHQL_URL/actuator/health" "GraphQL Service" 120; then
         print_warning "GraphQL Service failed to start"
         print_info "Check logs: docker-compose logs graphql-service"
@@ -392,8 +359,8 @@ EOF
     
     echo ""
 
-    # Step 7: Start UI (Next.js development server)
-    print_step "7" "Start Next.js UI"
+    # Step 6: Start UI (Next.js development server)
+    print_step "6" "Start Next.js UI"
     
     cd "$PROJECT_ROOT/ui"
     
@@ -421,25 +388,11 @@ EOF
     
     echo ""
 
-    # Step 8: Service health checks
-    print_step "8" "Service Health Checks"
+    # Step 7: Service health checks
+    print_step "7" "Service Health Checks"
     
     echo "Checking service endpoints..."
     echo ""
-    
-    # Config Server
-    if curl -sf "$CONFIG_SERVER_URL/actuator/health" | grep -q "UP"; then
-        print_success "Config Server: UP ($CONFIG_SERVER_URL)"
-    else
-        print_warning "Config Server: DOWN ($CONFIG_SERVER_URL)"
-    fi
-    
-    # Gateway
-    if curl -sf "$GATEWAY_URL/actuator/health" | grep -q "UP"; then
-        print_success "Edge Gateway: UP ($GATEWAY_URL)"
-    else
-        print_warning "Edge Gateway: DOWN ($GATEWAY_URL)"
-    fi
     
     # GraphQL Service
     if curl -sf "$GRAPHQL_URL/actuator/health" | grep -q "UP"; then
@@ -458,41 +411,47 @@ EOF
     # IronBucket services (if enabled)
     if [ "$START_IRONBUCKET" = true ]; then
         echo ""
-        echo "IronBucket Services:"
+        echo "Shared IronBucket Infrastructure:"
+        
+        if curl -sf "$GATEWAY_URL/actuator/health-check" > /dev/null 2>&1; then
+            print_success "Sentinel-Gear (API Gateway): UP ($GATEWAY_URL)"
+        else
+            print_warning "Sentinel-Gear (API Gateway): DOWN ($GATEWAY_URL)"
+        fi
         
         if curl -sf "$KEYCLOAK_URL/realms/dev/.well-known/openid-configuration" > /dev/null 2>&1; then
-            print_success "Keycloak: UP ($KEYCLOAK_URL)"
+            print_success "Keycloak (Identity): UP ($KEYCLOAK_URL)"
         else
-            print_warning "Keycloak: DOWN ($KEYCLOAK_URL)"
+            print_warning "Keycloak (Identity): DOWN ($KEYCLOAK_URL)"
         fi
         
         if curl -sf "$MINIO_URL/minio/health/live" > /dev/null 2>&1; then
-            print_success "MinIO: UP ($MINIO_URL)"
+            print_success "MinIO (S3 Storage): UP ($MINIO_URL)"
         else
-            print_warning "MinIO: DOWN ($MINIO_URL)"
+            print_warning "MinIO (S3 Storage): DOWN ($MINIO_URL)"
         fi
     fi
     
     echo ""
 
-    # Step 9: Summary
+    # Step 8: Summary
     print_section "🎉 Graphite-Forge is Ready!"
     
-    echo -e "${CYAN}Service URLs:${NC}"
+    echo -e "${CYAN}Graphite-Forge Services:${NC}"
     echo ""
-    echo -e "  📊 GraphQL Playground:    ${GREEN}$GRAPHQL_URL/graphiql${NC}"
-    echo -e "  🌐 Edge Gateway:          ${GREEN}$GATEWAY_URL${NC}"
-    echo -e "  ⚙️  Config Server:         ${GREEN}$CONFIG_SERVER_URL${NC}"
+    echo -e "  📊 GraphQL Playground:    ${GREEN}http://localhost:8083/graphiql${NC}"
     echo -e "  🎨 Next.js UI:            ${GREEN}$UI_URL${NC}"
     
     if [ "$START_IRONBUCKET" = true ]; then
         echo ""
-        echo -e "${CYAN}IronBucket Services:${NC}"
+        echo -e "${CYAN}Shared IronBucket Infrastructure:${NC}"
         echo ""
+        echo -e "  🚀 API Gateway (Sentinel-Gear):  ${GREEN}http://localhost:8080${NC}"
         echo -e "  🔐 Keycloak Admin:        ${GREEN}$KEYCLOAK_URL${NC}"
         echo -e "     Username: admin / Password: admin"
         echo -e "  💾 MinIO Console:         ${GREEN}http://localhost:9001${NC}"
         echo -e "     Username: minioadmin / Password: minioadmin"
+        echo -e "  📡 Eureka Service Registry:     ${GREEN}http://localhost:8083/eureka${NC}"
     fi
     
     echo ""
@@ -501,7 +460,7 @@ EOF
     echo -e "  View logs:                ${YELLOW}docker-compose logs -f [service]${NC}"
     echo -e "  Stop all services:        ${YELLOW}docker-compose down${NC}"
     echo -e "  Restart service:          ${YELLOW}docker-compose restart [service]${NC}"
-    echo -e "  Run E2E tests:            ${YELLOW}./scripts/test-e2e.sh${NC}"
+    echo -e "  Run E2E tests:            ${YELLOW}./scripts/test-e2e.sh --in-container${NC}"
     
     if [ "$START_IRONBUCKET" = true ]; then
         echo -e "  Stop IronBucket:          ${YELLOW}cd IronBucket/steel-hammer && docker-compose -f docker-compose-steel-hammer.yml down${NC}"

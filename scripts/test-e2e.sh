@@ -20,11 +20,11 @@ IRONBUCKET_DIR="/workspaces/Graphite-Forge/IronBucket"
 STEEL_HAMMER_DIR="/workspaces/Graphite-Forge/IronBucket/steel-hammer"
 LOG_FILE="$PROJECT_ROOT/e2e-test-$(date +%Y%m%d-%H%M%S).log"
 
-# Test URLs
-GATEWAY_URL="http://localhost:8080"
-GRAPHQL_URL="http://localhost:8081"
-KEYCLOAK_URL="http://localhost:7081"
-MINIO_URL="http://localhost:9000"
+# Test URLs (use IronBucket shared infrastructure when available)
+GATEWAY_URL="http://localhost:8080"           # Sentinel-Gear API Gateway
+GRAPHQL_URL="http://localhost:8083"           # GraphQL Service (Graphite-Forge)
+KEYCLOAK_URL="http://localhost:7081"          # Keycloak (IronBucket)
+MINIO_URL="http://localhost:9000"             # MinIO (IronBucket)
 
 # Test tracking
 TESTS_PASSED=0
@@ -153,11 +153,11 @@ check_service() {
 
 # Infrastructure health checks
 test_infrastructure() {
-    print_section "Infrastructure Health Checks"
+    print_section "Shared Infrastructure Health Checks"
     
     local critical_failure=false
     
-    print_test "Keycloak is accessible"
+    print_test "Keycloak (Identity Provider) is accessible"
     if ! check_service "$KEYCLOAK_URL/realms/dev/.well-known/openid-configuration" "Keycloak"; then
         assert_success "Keycloak health" 1
         print_error "Keycloak is required for authentication"
@@ -167,7 +167,7 @@ test_infrastructure() {
         assert_success "Keycloak health" 0
     fi
     
-    print_test "MinIO is accessible"
+    print_test "MinIO (S3 Storage) is accessible"
     if ! check_service "$MINIO_URL/minio/health/live" "MinIO"; then
         assert_success "MinIO health" 1
         print_warning "MinIO is required for S3 operations"
@@ -175,15 +175,15 @@ test_infrastructure() {
         assert_success "MinIO health" 0
     fi
     
-    print_test "Gateway is accessible"
-    if ! check_service "$GATEWAY_URL/actuator/health" "Edge Gateway"; then
+    print_test "Sentinel-Gear (API Gateway) is accessible"
+    if ! check_service "$GATEWAY_URL/actuator/health-check" "Sentinel-Gear"; then
         assert_success "Gateway health" 1
-        print_warning "Gateway is required for routing"
+        print_warning "Sentinel-Gear is required for API routing"
     else
         assert_success "Gateway health" 0
     fi
     
-    print_test "GraphQL service is accessible"
+    print_test "GraphQL service (Graphite-Forge) is accessible"
     if ! check_service "$GRAPHQL_URL/actuator/health" "GraphQL Service"; then
         assert_success "GraphQL health" 1
         print_error "GraphQL service is required for tests"
@@ -491,7 +491,7 @@ main() {
         
         docker run --rm \
             --network "$network_name" \
-            -e GATEWAY_URL=http://edge-gateway:8080 \
+            -e GATEWAY_URL=http://steel-hammer-sentinel-gear:8080 \
             -e GRAPHQL_URL=http://graphql-service:8083 \
             -e KEYCLOAK_URL=http://steel-hammer-keycloak:7081 \
             -e MINIO_URL=http://steel-hammer-minio:9000 \
