@@ -515,7 +515,7 @@ class IronBucketS3ServiceTest {
             String jwtToken = mockJwtToken;
 
             // When
-            String tenant = service.extractTenantFromJwt(jwtToken);
+            String tenant = service.extractTenantFromJwt(jwtToken).block();
 
             // Then
             assertThat(tenant).isEqualTo(mockUserTenant);
@@ -528,7 +528,7 @@ class IronBucketS3ServiceTest {
             String jwtToken = mockJwtToken;
 
             // When
-            List<String> roles = service.extractRolesFromJwt(jwtToken);
+            List<String> roles = service.extractRolesFromJwt(jwtToken).block();
 
             // Then
             assertThat(roles).containsExactlyInAnyOrderElementsOf(mockUserRoles);
@@ -541,7 +541,7 @@ class IronBucketS3ServiceTest {
             String jwtToken = mockJwtToken;
 
             // When
-            String subject = service.extractSubjectFromJwt(jwtToken);
+            String subject = service.extractSubjectFromJwt(jwtToken).block();
 
             // Then
             assertThat(subject).isEqualTo("testuser");

@@ -140,7 +140,7 @@ class S3ObjectResolverTest {
             String objectKey = "upload.txt";
             byte[] content = "test content".getBytes();
             String contentType = "text/plain";
-            S3Object mockObject = new S3Object(objectKey, bucketName, content.length, Instant.now(), contentType, null);
+            S3Object mockObject = new S3Object(objectKey, bucketName, (long) content.length, Instant.now(), contentType, null);
             when(s3Service.uploadObject(anyString(), eq(bucketName), eq(objectKey), any(), eq(contentType), isNull()))
                 .thenReturn(Mono.just(mockObject));
 
@@ -161,7 +161,7 @@ class S3ObjectResolverTest {
             byte[] content = "test content".getBytes();
             String contentType = "text/plain";
             Map<String, String> metadata = Map.of("author", "testuser");
-            S3Object mockObject = new S3Object(objectKey, bucketName, content.length, Instant.now(), contentType, metadata);
+            S3Object mockObject = new S3Object(objectKey, bucketName, (long) content.length, Instant.now(), contentType, metadata);
             when(s3Service.uploadObject(anyString(), eq(bucketName), eq(objectKey), any(), eq(contentType), eq(metadata)))
                 .thenReturn(Mono.just(mockObject));
 

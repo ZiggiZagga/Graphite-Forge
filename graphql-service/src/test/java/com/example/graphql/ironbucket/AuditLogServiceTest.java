@@ -407,7 +407,7 @@ class AuditLogServiceTest {
 
     @Nested
     @DisplayName("Audit Statistics")
-    class AuditStatistics {
+    class AuditStatisticsTests {
 
         @Test
         @DisplayName("Should get audit statistics summary")
@@ -506,7 +506,7 @@ class AuditLogServiceTest {
             StepVerifier.create(result)
                 .expectNextMatches(policy -> 
                     policy.retentionDays() > 0 &&
-                    policy.archiveEnabled() != null
+                    policy.archiveEnabled() == true
                 )
                 .verifyComplete();
         }
